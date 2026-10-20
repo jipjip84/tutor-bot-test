@@ -183,6 +183,64 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 .settings input { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; background: var(--paper); color: var(--ink); }
 .saved { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); }
 
+/* Card extras */
+.btn.small { padding: 4px 12px; font-size: .85rem; text-decoration: none; display: inline-flex; align-items: center; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(15, 22, 16, .55); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.modal-card { position: relative; background: var(--paper); color: var(--ink); border: 2px solid var(--ink); border-radius: 16px; width: min(760px, 100%); max-height: 100%; overflow-y: auto; padding: 18px 20px; display: grid; gap: 12px; }
+.modal-card #modalBody { display: grid; gap: 12px; min-width: 0; }
+.modal-x { position: absolute; top: 12px; right: 12px; }
+.anim { background: var(--sky); border: 2px solid var(--ink); border-radius: 12px; overflow-x: auto; }
+.anim-svg { display: block; width: 100%; height: auto; }
+.anim .st { opacity: .14; transition: opacity .6s, transform .6s; transform-box: fill-box; transform-origin: center; }
+.anim .st.on { opacity: 1; }
+.anim .st.cur { transform: scale(1.06); }
+.anim .ring { fill: var(--paper); stroke: var(--line); stroke-width: 3; }
+.anim .st.cur .ring { stroke: var(--wheat); stroke-width: 5; }
+.anim .band { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.anim .st.cur .band { fill: var(--wheat-soft); stroke: var(--wheat); stroke-width: 4; }
+.anim .lbl { font-family: var(--font-body); font-weight: 700; font-size: 19px; fill: var(--ink); }
+.anim .ar { stroke: var(--ink); stroke-width: 4; stroke-dasharray: 400; stroke-dashoffset: 400; opacity: 0; transition: stroke-dashoffset .9s ease, opacity .2s; }
+.anim .ar.on { stroke-dashoffset: 0; opacity: 1; }
+.anim .ah { fill: var(--ink); }
+.anim-cap { display: grid; gap: 2px; min-height: 3.2em; }
+.anim-cap b { font-family: var(--font-display); font-weight: 400; font-size: 1.2rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chat { display: grid; gap: 10px; max-height: 340px; overflow-y: auto; padding: 4px; }
+.msg { padding: 10px 12px; border-radius: 12px; max-width: 88%; white-space: pre-wrap; }
+.msg.me { justify-self: end; background: var(--field); color: var(--field-ink); }
+.msg.bot { justify-self: start; background: var(--wheat-soft); border: 1px solid var(--wheat); }
+.msg.err { border-color: var(--barn); }
+.ask { display: flex; gap: 8px; flex-wrap: wrap; }
+.ask input { flex: 1 1 200px; min-width: 0; font: inherit; border: 2px solid var(--line); border-radius: 999px; padding: 6px 14px; background: var(--bg); color: var(--ink); }
+.small { font-size: .88rem; color: var(--muted); }
+
+/* Field games */
+.games { display: grid; gap: 16px; }
+.game-menu { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.game-tile { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 14px; align-items: center; text-align: left; background: var(--paper); color: var(--ink); border: 2px solid var(--line); border-radius: 14px; padding: 14px; }
+.game-tile:hover { border-color: var(--ink); }
+.game-tile svg { width: 72px; height: 72px; }
+.game-tile b { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; display: block; }
+.game-tile span span { color: var(--muted); font-size: .9rem; }
+.pool { display: flex; flex-wrap: wrap; gap: 8px; min-height: 44px; }
+.chip-item { border: 2px solid var(--ink); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 6px 14px; font-weight: 600; cursor: grab; }
+.chip-item.sel { background: var(--wheat); border-color: var(--wheat); color: #1e1a10; }
+.chip-item.shake { animation: shake .4s; border-color: var(--barn); }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.bins { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.bin { background: var(--paper); border: 2px solid var(--ink); border-radius: 0 0 12px 12px; padding: 0 12px 12px; display: grid; gap: 8px; align-content: start; min-height: 150px; cursor: pointer; }
+.bin-roof { height: 16px; margin: 0 -12px; background: var(--barn); clip-path: polygon(0 100%, 50% 0, 100% 100%); }
+.bin.over { background: var(--wheat-soft); }
+.bin b { font-size: .95rem; }
+.bin-items { display: flex; flex-wrap: wrap; gap: 6px; }
+.placed { background: var(--field); color: var(--field-ink); border-radius: 999px; padding: 2px 10px; font-size: .82rem; }
+.placed.late { background: var(--wheat); color: #1e1a10; }
+.feedback { padding: 10px 12px; border-radius: 10px; }
+.feedback.ok { background: var(--field); color: var(--field-ink); }
+.feedback.no { background: var(--wheat-soft); border: 1px solid var(--wheat); }
+
 /* Toast + burst */
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 140%); background: var(--ink); color: var(--paper); border-radius: 14px; padding: 12px 18px; display: flex; gap: 12px; align-items: center; max-width: min(92vw, 460px); transition: transform .4s cubic-bezier(.2,1.3,.4,1); z-index: 50; }
 .toast.show { transform: translate(-50%, 0); }
@@ -197,6 +255,7 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 }
 @media (max-width: 520px) {
   .opts { grid-template-columns: minmax(0,1fr); }
+  .game-menu { grid-template-columns: minmax(0, 1fr); }
   .complete { grid-template-columns: 44px minmax(0, 1fr); }
   .complete svg { width: 44px; height: 44px; }
   .complete .btn, .complete .linkish, .complete-actions { grid-column: 1 / -1; justify-content: flex-start; }
@@ -222,6 +281,7 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
       <label for="startDate">Season started</label>
       <input type="date" id="startDate">
       <span class="saved" id="savedState">Saved on this device</span>
+      <button class="btn small" id="soundToggle" aria-pressed="true">Sound on</button>
     </div>
   </header>
 
@@ -233,15 +293,18 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
     <button role="tab" id="tab-today" aria-selected="true" data-tab="today">Today</button>
     <button role="tab" id="tab-calendar" aria-selected="false" data-tab="calendar">Planting calendar</button>
     <button role="tab" id="tab-library" aria-selected="false" data-tab="library">Card barn</button>
+    <button role="tab" id="tab-games" aria-selected="false" data-tab="games">Field games</button>
     <button role="tab" id="tab-ribbons" aria-selected="false" data-tab="ribbons">Ribbons</button>
   </nav>
 
   <section class="panel" id="panel-today"></section>
   <section class="panel" id="panel-calendar" hidden></section>
   <section class="panel" id="panel-library" hidden></section>
+  <section class="panel" id="panel-games" hidden></section>
   <section class="panel" id="panel-ribbons" hidden></section>
 </div>
 
+<div class="modal" id="modal" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-label="Card extras"><button class="btn small modal-x" id="modalClose">Close</button><div id="modalBody"></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <canvas class="burst" id="burst"></canvas>
 
@@ -420,6 +483,8 @@ const RIBBONS = [
   { id: "halfway", title: "Halfway Harvest", desc: "Finish four full weeks. The silo is half full.", color: "#c98a12", test: () => [0,1,2,3].every(weekComplete) },
   { id: "early", title: "Early Riser", desc: "Finish a lesson before its scheduled day.", color: "#f4c542", test: () => Object.entries(state.lessonsDone).some(([i, d]) => d < iso(addDays(parseISO(state.start), Number(i)))) },
   { id: "double", title: "Double Shift", desc: "Finish two or more lessons in one day.", color: "#b3372c", test: () => { const c = {}; return Object.values(state.lessonsDone).some(d => (c[d] = (c[d] || 0) + 1) >= 2); } },
+  { id: "games", title: "Fair Games Winner", desc: "Get 100% in any field game.", color: "#6cbf7d", test: () => !!state.gamesPerfect },
+  { id: "curious", title: "Curious Calf", desc: "Ask the farm tutor five questions.", color: "#e48b84", test: () => (state.tutorQs || 0) >= 5 },
   { id: "streak3", title: "Three Days of Rain", desc: "Study three days in a row.", color: "#3a7fb0", test: () => bestStreak() >= 3 },
   { id: "streak7", title: "Week of Sunshine", desc: "Study seven days in a row.", color: "#e0a526", test: () => bestStreak() >= 7 },
   { id: "streak21", title: "Steady Hand at the Plough", desc: "Study 21 days in a row.", color: "#6a4930", test: () => bestStreak() >= 21 },
@@ -443,6 +508,7 @@ function celebrate(r) {
   const t = document.getElementById("toast");
   t.innerHTML = `${art("ribbon", r.color)}<div><b>${r.title}</b><span>${r.desc}</span></div>`;
   t.classList.add("show");
+  if (r.sound !== false) Sound.play(/^week/.test(r.id || "") ? "moo" : "fanfare");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
   burst();
@@ -524,6 +590,7 @@ function cardHTML(c, flipped, kicker) {
           <span class="eyebrow">${esc(c.term)}</span>
           <p class="def">${esc(c.definition)}</p>
           <div class="onfarm">${art(c.art)}<div><b>On the farm</b>${esc(c.farm)}</div></div>
+          ${cardActionsHTML(c)}
         </div>
         <div class="face-foot"><span>Lot ${esc(c.id)}</span><span>Textbook §${esc(c.section)}</span></div>
       </div>
@@ -633,8 +700,8 @@ function wireToday(info) {
     keyNav = { prev: () => move(view.card - 1), next: () => move(view.card + 1) };
     if ($("markDone")) $("markDone").onclick = () => {
       state.lessonsDone[view.day] = iso(new Date()); state.xp += 20;
-      markActive(); save();
-      celebrate({ title: "Lesson complete!", desc: `${info.lesson.title} is in the barn. +20 bushels.`, color: "#4f9a55" });
+      markActive(); save(); Sound.play("rooster");
+      celebrate({ sound: false, title: "Lesson complete!", desc: `${info.lesson.title} is in the barn. +20 bushels.`, color: "#4f9a55" });
       renderAll();
       setTimeout(() => { checkRibbons(); save(); renderAll(); }, 2600);
     };
@@ -654,6 +721,7 @@ function wireToday(info) {
 }
 
 function rate(r, info) {
+  Sound.play(r === "known" ? "pop" : "seed");
   if (view.mode === "greenhouse") {
     const c = view.greenhouse.cards[view.greenhouse.idx];
     if (r === "known") { state.cards[c.id] = "known"; state.rescued = (state.rescued || 0) + 1; state.xp += 3; }
@@ -673,6 +741,7 @@ function answer(k, info) {
   q.answered = true;
   const ok = it.opts[k].id === it.card.id;
   if (ok) { q.right++; state.xp += 5; }
+  Sound.play(ok ? "register" : "buzz");
   document.querySelectorAll(".opt").forEach((b, j) => { b.disabled = true; if (it.opts[j].id === it.card.id) b.classList.add("right"); else if (j === k) b.classList.add("wrong"); });
   setTimeout(() => {
     q.idx++; q.answered = false;
@@ -688,8 +757,8 @@ function answer(k, info) {
 function wirePacket(root, setFlipped, getFlipped) {
   const pk = root.querySelector("#packet");
   if (!pk) return;
-  const flip = () => { setFlipped(!getFlipped()); pk.classList.toggle("flipped", getFlipped()); };
-  pk.onclick = flip;
+  const flip = () => { setFlipped(!getFlipped()); pk.classList.toggle("flipped", getFlipped()); Sound.play("flip"); };
+  pk.onclick = e => { if (e.target.closest("a, .card-actions")) return; flip(); };
   pk.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
 }
 
@@ -730,6 +799,7 @@ function renderLibrary() {
   $("libPrev").onclick = () => move(lib.idx - 1);
   $("libNext").onclick = () => move(lib.idx + 1);
   const rateLib = r => {
+    Sound.play(r === "known" ? "pop" : "seed");
     const before = state.cards[c.id];
     state.cards[c.id] = r;
     if (r === "known" && before !== "known") { state.xp += 5; if (before === "growing") state.rescued = (state.rescued || 0) + 1; }
@@ -747,6 +817,7 @@ let currentTab = "today", keyNav = null, libKeys = null;
 document.addEventListener("keydown", e => {
   if (e.target.closest && e.target.closest("input, select, textarea")) return;
   const nav = currentTab === "today" ? keyNav : currentTab === "library" ? libKeys : null;
+  if (!document.getElementById("modal").hidden) return;
   if (nav && e.key === "ArrowLeft") { e.preventDefault(); nav.prev(); }
   if (nav && e.key === "ArrowRight") { e.preventDefault(); nav.next(); }
   if (e.key === " " && !(e.target.closest && e.target.closest("button, #packet"))) {
@@ -785,10 +856,406 @@ function renderRibbons() {
 function selectTab(name) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
   currentTab = name;
-  ["today", "calendar", "library", "ribbons"].forEach(n => document.getElementById("panel-" + n).hidden = n !== name);
+  if (name === "games") renderGames();
+  ["today", "calendar", "library", "games", "ribbons"].forEach(n => document.getElementById("panel-" + n).hidden = n !== name);
   renderAll();
 }
 function renderAll() { renderFarm(); renderStats(); renderToday(); renderCalendar(); renderLibrary(); renderRibbons(); }
+
+/* ================= Sound ================= */
+const Sound = (() => {
+  let on = true, ctx = null;
+  try { on = localStorage.getItem("harvest-ledger-sound") !== "off"; } catch (e) {}
+  function ac() {
+    if (!ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ctx = new A(); }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+  function tone(type, f0, f1, dur, vol, at, filter) {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + (at || 0);
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.05, dur / 4)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    let node = o;
+    if (filter) { const f = c.createBiquadFilter(); f.type = filter[0]; f.frequency.value = filter[1]; o.connect(f); node = f; }
+    node.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + .05);
+  }
+  function noise(dur, vol, at, hp) {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + (at || 0);
+    const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = buf; f.type = "highpass"; f.frequency.value = hp || 2000; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
+  }
+  const fx = {
+    flip: () => noise(.09, .18, 0, 2500),
+    pop: () => { tone("sine", 660, 990, .12, .25); tone("sine", 990, 1320, .14, .18, .08); },
+    seed: () => tone("triangle", 330, 260, .18, .2),
+    moo: () => { tone("sawtooth", 150, 105, 1.1, .22, 0, ["lowpass", 700]); tone("sawtooth", 152, 108, 1.1, .12, .02, ["lowpass", 500]); },
+    rooster: () => { [[520, 900, .14], [900, 760, .12], [760, 1150, .22], [1150, 640, .45]].reduce((at, [a, b, d]) => { tone("square", a, b, d, .09, at, ["bandpass", 1200]); return at + d * .9; }, 0); },
+    register: () => { noise(.06, .2, 0, 4000); tone("sine", 1318, 1318, .5, .2, .05); tone("sine", 1760, 1760, .6, .15, .12); },
+    buzz: () => tone("square", 140, 110, .28, .08, 0, ["lowpass", 900]),
+    fanfare: () => { [523, 659, 784, 1047].forEach((f, i) => tone("triangle", f, f, .22, .2, i * .12)); }
+  };
+  return {
+    get on() { return on; },
+    toggle() { on = !on; try { localStorage.setItem("harvest-ledger-sound", on ? "on" : "off"); } catch (e) {} if (on) fx.pop(); return on; },
+    play(name) { if (on && fx[name]) try { fx[name](); } catch (e) {} }
+  };
+})();
+
+/* ================= Read aloud ================= */
+const canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function";
+function speakCard(c, btn) {
+  if (!canSpeak) return;
+  const synth = window.speechSynthesis;
+  if (synth.speaking) { synth.cancel(); if (btn) btn.textContent = "Read aloud"; return; }
+  const u = new SpeechSynthesisUtterance(`${c.term}. ${c.definition} On the farm: ${c.farm}`);
+  u.rate = .98;
+  u.onend = u.onerror = () => { if (btn) btn.textContent = "Read aloud"; };
+  if (btn) btn.textContent = "Stop reading";
+  synth.speak(u);
+}
+
+/* ================= Animated scenes ================= */
+const ICE = {
+  melt: `<rect x="24" y="22" width="52" height="46" rx="8" fill="#bfe3f5" stroke="#3a7fb0" stroke-width="3"/><path d="M34 68 v10 M50 68 v16 M66 68 v8" stroke="#3a7fb0" stroke-width="4" stroke-linecap="round"/><ellipse cx="50" cy="90" rx="30" ry="5" fill="#7cc2e8"/>`,
+  flow: `<path d="M8 70 Q30 50 50 66 T92 62 L92 90 L8 90Z" fill="#7cc2e8"/><path d="M20 40 H70 M60 30 L72 40 L60 50" stroke="#1e2a1c" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+  refreeze: `<polygon points="50,14 82,32 82,68 50,86 18,68 18,32" fill="#bfe3f5" stroke="#3a7fb0" stroke-width="3"/><path d="M50 30 v40 M34 40 l32 20 M66 40 l-32 20" stroke="#3a7fb0" stroke-width="2"/>`
+};
+const ANIMS = {
+  "Lewin's three-stage model": { layout: "line", steps: [
+    ["Unfreeze", "Melt the old habit: show the crew why June haying no longer works.", null, ICE.melt],
+    ["Change", "Move to the new rotation, with training and plenty of support.", null, ICE.flow],
+    ["Refreeze", "Lock it in: new checklist, new routine, celebrate the first good cut.", null, ICE.refreeze]] },
+  "Control process": { layout: "cycle", steps: [
+    ["Set standards", "30 litres per cow per day.", "almanac"], ["Measure", "Weigh every cow's milk this week.", "scale"],
+    ["Compare", "Average is 26 litres: 4 short.", "chart"], ["Correct", "Change the feed ration, then measure again.", "tractor"]] },
+  "P-O-L-C framework": { layout: "cycle", steps: [
+    ["Planning", "Choose next season's crops and targets.", "almanac"], ["Organizing", "Assign people, machines and fields.", "hands"],
+    ["Leading", "Rally and coach the crew through harvest.", "sun"], ["Controlling", "Check yield against target and adjust.", "chart"]] },
+  "Tuckman's stages of development": { layout: "line", steps: [
+    ["Forming", "New seasonal crew, polite and unsure.", "hands"], ["Storming", "Arguments over rows and breaks.", "rain"],
+    ["Norming", "Shared rules emerge: nobody leaves until the last crate.", "fence"], ["Performing", "The crew hums and records pile up.", "basket"],
+    ["Adjourning", "Season ends with a harvest supper.", "sun"]] },
+  "Maslow's hierarchy of needs": { layout: "pyramid", steps: [
+    ["Physiological", "Water, food, rest between shifts.", "water"], ["Safety", "Safe machines, steady pay, housing.", "house"],
+    ["Social", "Belonging to the crew.", "hands"], ["Esteem", "Recognition, like a ribbon at the fair.", "ribbon"],
+    ["Self-actualization", "Growing into the best farmer you can be.", "apple"]] },
+  "Strategic, tactical, operational planning": { layout: "pyramid", steps: [
+    ["Operational", "Under a year: spread compost on Tuesday.", "almanac"], ["Tactical", "1–3 years: convert the north fields.", "tractor"],
+    ["Strategic", "3+ years: become an organic farm.", "vane"]] },
+  "Communication process model": { layout: "line", steps: [
+    ["Sender encodes", "You decide to say \"close the north gate\".", "hands"], ["Channel", "You shout it across the yard.", "vane"],
+    ["Noise", "The grain dryer roars.", "gear"], ["Receiver decodes", "The hand hears \"close the north... wait?\"", "hands"],
+    ["Feedback", "They shout back \"which gate?\" and you clarify.", "fence"]] },
+  "Porter's five forces": { layout: "forces", steps: [
+    ["Rivalry", "Other dairies in the valley fight for the same buyers.", "barn"], ["New entrants", "Could a mega-farm move in next door?", "tractor"],
+    ["Substitutes", "Oat milk competes with dairy milk.", "apple"], ["Buyer power", "Three supermarket chains buy most of the milk.", "market"],
+    ["Supplier power", "One company sells the seed and feed you need.", "wheat"]] },
+  "Rational decision-making model": { layout: "line", steps: [
+    ["Identify problem", "The old tractor keeps breaking down.", "scarecrow"], ["Set criteria", "Price, horsepower, dealer support, weighted.", "scale"],
+    ["Alternatives", "Three dealers, new or used.", "seedling"], ["Choose", "Score them and pick the best.", "tractor"],
+    ["Implement", "Buy it and train the crew.", "gear"], ["Evaluate", "A season later: fewer breakdowns?", "chart"]] },
+  "Expectancy theory": { layout: "line", steps: [
+    ["Effort", "Will extra effort raise my count? (expectancy)", "hands"], ["Performance", "Will a higher count earn the bonus? (instrumentality)", "basket"],
+    ["Reward", "The harvest bonus.", "ribbon"], ["Valence", "Do I actually value that bonus?", "sun"]] },
+  "Value chain": { layout: "line", steps: [
+    ["Inputs", "Seed, feed and fuel arrive.", "seedling"], ["Grow", "Plant, water, tend.", "wheat"], ["Harvest", "Combine runs at dawn.", "tractor"],
+    ["Pack", "Grade and crate the crop.", "basket"], ["Sell", "Market stall and restaurant deliveries.", "market"]] }
+};
+function stepArt(s) { return s[3] || (ART[s[2]] || ART.seedling)(); }
+function animSVG(a) {
+  const n = a.steps.length, parts = [], arrows = [];
+  const node = (i, x, y, size, s) => `<g class="st" data-i="${i}"><circle cx="${x}" cy="${y}" r="${size * .62}" class="ring"/><g transform="translate(${x - size / 2} ${y - size / 2}) scale(${size / 100})">${stepArt(s)}</g><text x="${x}" y="${y + size * .62 + 18}" text-anchor="middle" class="lbl">${esc(s[0])}</text></g>`;
+  const arrow = (i, x1, y1, x2, y2) => `<line class="ar" data-i="${i}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#ah)"/>`;
+  let h = 280;
+  if (a.layout === "line") {
+    const size = n > 5 ? 64 : 76, xs = a.steps.map((_, i) => n === 1 ? 320 : 60 + i * (520 / (n - 1)));
+    a.steps.forEach((s, i) => { parts.push(node(i, xs[i], 120, size, s)); if (i < n - 1) arrows.push(arrow(i + 1, xs[i] + size * .65, 120, xs[i + 1] - size * .7, 120)); });
+  } else if (a.layout === "cycle") {
+    const cx = 320, cy = 150, r = 100, size = 68;
+    const pt = i => [cx + Math.cos(-Math.PI / 2 + i * 2 * Math.PI / n) * r * 1.7, cy + Math.sin(-Math.PI / 2 + i * 2 * Math.PI / n) * r * .95];
+    h = 330;
+    a.steps.forEach((s, i) => {
+      const [x, y] = pt(i), [x2, y2] = pt((i + 1) % n);
+      parts.push(node(i, x, y, size, s));
+      const dx = x2 - x, dy = y2 - y, L = Math.hypot(dx, dy), k = 58 / L;
+      arrows.push(arrow((i + 1) % n === 0 ? n : i + 1, x + dx * k, y + dy * k, x2 - dx * k, y2 - dy * k));
+    });
+  } else if (a.layout === "pyramid") {
+    const band = 230 / n;
+    a.steps.forEach((s, i) => {
+      const yb = 260 - i * band, yt = yb - band + 4, wb = 520 - i * (380 / n), wt = 520 - (i + 1) * (380 / n);
+      parts.push(`<g class="st" data-i="${i}"><polygon class="band" points="${320 - wb / 2},${yb} ${320 + wb / 2},${yb} ${320 + wt / 2},${yt} ${320 - wt / 2},${yt}"/><g transform="translate(${320 - wt / 2 + 6} ${yt + 2}) scale(${(band - 8) / 100})">${stepArt(s)}</g><text x="${330}" y="${(yb + yt) / 2 + 6}" text-anchor="middle" class="lbl">${esc(s[0])}</text></g>`);
+    });
+  } else {
+    h = 310;
+    const pos = [[320, 150], [320, 50], [540, 150], [320, 252], [100, 150]], size = 64;
+    a.steps.forEach((s, i) => { parts.push(node(i, pos[i][0], pos[i][1], i ? size : 84, s)); if (i) { const [x, y] = pos[i], dx = 320 - x, dy = 150 - y, L = Math.hypot(dx, dy); arrows.push(arrow(i, x + dx / L * 48, y + dy / L * 48, 320 - dx / L * 62, 150 - dy / L * 62)); } });
+  }
+  return `<svg viewBox="0 0 640 ${h}" class="anim-svg" role="img" aria-label="Animated diagram"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" class="ah"/></marker></defs>${arrows.join("")}${parts.join("")}</svg>`;
+}
+let animTimer = null;
+function openAnim(c) {
+  const a = ANIMS[c.term]; if (!a) return;
+  let cur = -1, playing = true;
+  openModal(`<span class="eyebrow">Watch it grow · §${esc(c.section)}</span><h2>${esc(c.term)}</h2>
+    <div class="anim">${animSVG(a)}</div>
+    <div class="anim-cap"><b id="animLabel"></b><span id="animText"></span></div>
+    <div class="rate"><button class="btn" id="animBack">← Step</button><button class="btn primary" id="animPlay">Pause</button><button class="btn" id="animNext">Step →</button><button class="btn" id="animReplay">Replay</button></div>`);
+  const show = i => {
+    cur = Math.max(0, Math.min(a.steps.length - 1, i));
+    document.querySelectorAll(".anim .st").forEach(g => { const k = Number(g.dataset.i); g.classList.toggle("on", k <= cur); g.classList.toggle("cur", k === cur); });
+    document.querySelectorAll(".anim .ar").forEach(l => l.classList.toggle("on", Number(l.dataset.i) <= cur));
+    document.getElementById("animLabel").textContent = `${cur + 1}. ${a.steps[cur][0]}`;
+    document.getElementById("animText").textContent = a.steps[cur][1];
+    Sound.play("seed");
+  };
+  const stop = () => { clearInterval(animTimer); animTimer = null; playing = false; const b = document.getElementById("animPlay"); if (b) b.textContent = "Play"; };
+  const play = () => {
+    clearInterval(animTimer); playing = true; document.getElementById("animPlay").textContent = "Pause";
+    if (cur >= a.steps.length - 1) cur = -1;
+    show(cur + 1);
+    animTimer = setInterval(() => { if (!document.getElementById("animPlay")) return clearInterval(animTimer); if (cur >= a.steps.length - 1) { stop(); Sound.play("pop"); } else show(cur + 1); }, 2400);
+  };
+  document.getElementById("animPlay").onclick = () => playing ? stop() : play();
+  document.getElementById("animNext").onclick = () => { stop(); show(cur + 1); };
+  document.getElementById("animBack").onclick = () => { stop(); show(cur - 1); };
+  document.getElementById("animReplay").onclick = () => { cur = -1; play(); };
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { stop(); show(0); } else play();
+}
+
+/* ================= Farm tutor (Claude) ================= */
+let tutorApi = null;
+function tutorReady() { return !!tutorApi; }
+async function connectTutor() {
+  if (!window.claude || !window.claude.use) return;
+  try { tutorApi = await window.claude.use("sample"); } catch (e) { tutorApi = null; }
+  if (tutorApi) renderAll();
+}
+function openTutor(c) {
+  const chat = [];
+  let busy = null;
+  openModal(`<span class="eyebrow">Farm tutor · §${esc(c.section)}</span><h2>${esc(c.term)}</h2>
+    <div class="chips">${["Explain it simply", "Give me another farm example", "Quiz me on this", "How does this connect to other ideas?"].map(q => `<button class="btn" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+    <div class="chat" id="chat" aria-live="polite"><p class="small">Ask anything about this concept. The tutor uses farm examples and keeps answers short.</p></div>
+    <form class="ask" id="askForm"><label for="askInput" class="sr">Your question</label><input id="askInput" autocomplete="off" placeholder="Ask about ${esc(c.term)}…"><button class="btn primary" type="submit">Ask</button></form>`);
+  const chatEl = document.getElementById("chat");
+  const bubble = (who, text) => { const p = document.createElement("div"); p.className = "msg " + who; p.textContent = text; chatEl.appendChild(p); chatEl.scrollTop = chatEl.scrollHeight; return p; };
+  const intro = `You are a warm, encouraging tutor for a student taking a Principles of Management course (textbook: ${COURSE.book}). The student loves farming, so explain with farm and agriculture examples. Keep every answer under 140 words, in plain sentences with no markdown headings. If asked to quiz, ask one question at a time and wait for the answer.
+
+Concept: ${c.term} (textbook section ${c.section})
+Definition: ${c.definition}
+Farm example already shown on the card: ${c.farm}`;
+  async function ask(q) {
+    if (!q || busy) return;
+    chatEl.querySelector(".small") && chatEl.querySelector(".small").remove();
+    bubble("me", q);
+    chat.push({ role: "user", content: chat.length ? q : intro + "\n\nStudent: " + q });
+    const out = bubble("bot", "Thinking…");
+    busy = new AbortController();
+    try {
+      const r = await tutorApi(chat, { onText: u => { out.textContent = u.text; chatEl.scrollTop = chatEl.scrollHeight; }, signal: busy.signal, modelTier: "quick", cache: false });
+      out.textContent = r.text; chat.push({ role: "assistant", content: r.text });
+      state.tutorQs = (state.tutorQs || 0) + 1; markActive(); checkRibbons(); save(); renderStats();
+    } catch (e) {
+      chat.pop();
+      out.textContent = e && e.code === "not_granted" ? "The tutor needs permission to use Claude on this page. Allow it from the page's permissions, then ask again."
+        : e && e.code === "rate_limited" ? "The tutor needs a short break. Try again in a minute."
+        : e && e.name === "AbortError" ? "Stopped." : "The tutor couldn't answer just now. Try again in a moment.";
+      out.classList.add("err");
+    } finally { busy = null; }
+  }
+  document.querySelectorAll("[data-q]").forEach(b => b.onclick = () => ask(b.dataset.q));
+  document.getElementById("askForm").onsubmit = e => { e.preventDefault(); const i = document.getElementById("askInput"); const q = i.value.trim(); i.value = ""; ask(q); };
+  modalOnClose = () => { if (busy) busy.abort(); };
+}
+
+/* ================= Modal ================= */
+let modalOnClose = null, lastFocus = null;
+function openModal(html) {
+  lastFocus = document.activeElement;
+  document.getElementById("modalBody").innerHTML = html;
+  document.getElementById("modal").hidden = false;
+  document.getElementById("modalClose").focus();
+}
+function closeModal() {
+  clearInterval(animTimer); animTimer = null;
+  if (canSpeak) window.speechSynthesis.cancel();
+  if (modalOnClose) { modalOnClose(); modalOnClose = null; }
+  document.getElementById("modal").hidden = true;
+  document.getElementById("modalBody").innerHTML = "";
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+document.getElementById("modalClose").onclick = closeModal;
+document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !document.getElementById("modal").hidden) closeModal(); });
+
+/* Card action buttons (read aloud, animation, tutor) */
+const CARD_BY_ID = new Map(allCards().map(c => [c.id, c]));
+function cardActionsHTML(c) {
+  const q = encodeURIComponent(`${c.term} management explained`);
+  return `<div class="card-actions">
+    ${canSpeak ? `<button class="btn small" data-act="speak" data-id="${c.id}">Read aloud</button>` : ""}
+    ${ANIMS[c.term] ? `<button class="btn small gold" data-act="anim" data-id="${c.id}">Watch it grow</button>` : ""}
+    ${tutorReady() ? `<button class="btn small primary" data-act="tutor" data-id="${c.id}">Ask the farm tutor</button>` : ""}
+    <a class="btn small" href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener">Find a video ↗</a>
+  </div>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-act]");
+  if (!b) return;
+  e.stopPropagation();
+  const c = CARD_BY_ID.get(b.dataset.id); if (!c) return;
+  if (b.dataset.act === "speak") speakCard(c, b);
+  if (b.dataset.act === "anim") openAnim(c);
+  if (b.dataset.act === "tutor") openTutor(c);
+}, true);
+
+/* ================= Field games ================= */
+let game = { w: null, mode: null };
+function shuffle(a) { return a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]); }
+function norm(s) { return s.toLowerCase().replace(/\(.*?\)/g, " ").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim(); }
+function lev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
+function closeEnough(guess, term) {
+  const g = norm(guess), t = norm(term);
+  if (!g) return false;
+  if (g === t || lev(g, t) <= Math.max(1, Math.floor(t.length / 8))) return true;
+  const paren = (term.match(/\((.*?)\)/) || [])[1];
+  if (paren && norm(paren) === g) return true;
+  const words = t.split(" ").filter(w => w.length > 3 && !["theory", "model", "framework", "analysis"].includes(w));
+  return words.length > 0 && words.every(w => g.includes(w.slice(0, 5)));
+}
+function startGame(mode) {
+  const wk = WEEKS[game.w], pool = wk.days.flatMap(d => d.cards);
+  game = { w: game.w, mode, idx: 0, right: 0, total: 0, done: false, msg: "" };
+  if (mode === "sort") {
+    game.bins = wk.chapterNames.map(c => ({ key: String(c.num), label: `Ch ${c.num}: ${c.title}` }));
+    game.items = shuffle(pool).slice(0, 8).map(c => ({ id: c.id, text: c.term, bin: c.section.split(".")[0] }));
+  } else if (mode === "polc") {
+    game.bins = ["Planning", "Organizing", "Leading", "Controlling"].map(f => ({ key: f, label: f }));
+    game.items = shuffle(COURSE.polc).slice(0, 8).map((p, i) => ({ id: "p" + i, text: p.text, bin: p.fn }));
+  } else if (mode === "type") {
+    game.items = shuffle(pool).slice(0, 6);
+  } else {
+    game.items = shuffle(wk.scenarios).map(s => {
+      const others = shuffle(pool.filter(c => c.term !== s.answer)).slice(0, 3).map(c => c.term);
+      return Object.assign({}, s, { opts: shuffle([s.answer, ...others]) });
+    });
+  }
+  if (game.items[0] && game.bins) { game.placed = {}; game.missed = {}; game.sel = null; }
+  game.total = game.items.length;
+  renderGames();
+}
+function finishGame() {
+  game.done = true;
+  const pct = Math.round(game.right / game.total * 100);
+  state.xp += game.right * 2;
+  if (pct === 100) state.gamesPerfect = true;
+  state.gamesPlayed = (state.gamesPlayed || 0) + 1;
+  Sound.play(pct >= 80 ? "fanfare" : "seed");
+  markActive(); checkRibbons(); save(); renderStats(); renderRibbons();
+}
+function renderGames() {
+  const el = document.getElementById("panel-games");
+  if (game.w == null) game.w = Math.min(WEEKS.length - 1, Math.floor(todayIndex() / 7));
+  const wk = WEEKS[game.w];
+  const menu = [
+    ["sort", "Sort the harvest", `Drag each term into the barn for its chapter (${wk.chapters}).`, "barn"],
+    ["polc", "P-O-L-C barns", "Sort farm chores into Planning, Organizing, Leading or Controlling.", "fence"],
+    ["type", "Name that seed", "Read the definition and type the term from memory.", "seedling"],
+    ["scen", "Farm trouble", "Real farm situations. Pick the concept that explains each one.", "scarecrow"]
+  ];
+  let body = "";
+  if (!game.mode) body = `<div class="game-menu">${menu.map(([m, t, d, a]) => `<button class="game-tile" data-game="${m}">${art(a)}<span><b>${t}</b><span>${d}</span></span></button>`).join("")}</div>`;
+  else if (game.done) {
+    const pct = Math.round(game.right / game.total * 100);
+    body = `<div class="done-card">${art("ribbon", pct === 100 ? "#2b5fa8" : pct >= 80 ? "#b3372c" : "#c98a12")}<h2>${pct === 100 ? "Perfect round!" : pct >= 80 ? "Great round" : "Good practice"}</h2><p>${game.right} of ${game.total} right first time (${pct}%). +${game.right * 2} bushels.</p><div class="rate"><button class="btn primary" id="gAgain">Play again</button><button class="btn" id="gMenu">Other games</button></div></div>`;
+  } else if (game.bins) body = sortHTML();
+  else if (game.mode === "type") body = typeHTML();
+  else body = scenHTML();
+  el.innerHTML = `<div class="games">
+    <div class="libbar"><div><span class="eyebrow">Field games</span><h2>${game.mode ? menu.find(m => m[0] === game.mode)[1] : "Pick a game"}</h2></div>
+      <div class="settings"><label for="gWeek">Cards from</label><select id="gWeek">${WEEKS.map((w, i) => `<option value="${i}" ${i === game.w ? "selected" : ""}>Week ${i + 1}: ${esc(w.title)}</option>`).join("")}</select>${game.mode ? `<button class="btn" id="gBack">All games</button>` : ""}</div></div>
+    ${body}</div>`;
+  wireGames();
+}
+function sortHTML() {
+  const left = game.items.filter(it => !game.placed[it.id]);
+  return `<p class="hint">${game.msg || "Drag a chip onto a barn, or tap a chip and then tap a barn."}</p>
+    <div class="pool">${left.map(it => `<button class="chip-item ${game.sel === it.id ? "sel" : ""} ${game.shake === it.id ? "shake" : ""}" draggable="true" data-item="${it.id}">${esc(it.text)}</button>`).join("") || `<span class="small">All sorted!</span>`}</div>
+    <div class="bins">${game.bins.map(b => `<div class="bin" data-bin="${b.key}" tabindex="0" role="button" aria-label="Barn: ${esc(b.label)}"><div class="bin-roof"></div><b>${esc(b.label)}</b><div class="bin-items">${game.items.filter(it => game.placed[it.id] === b.key).map(it => `<span class="placed ${game.missed[it.id] ? "late" : ""}">${esc(it.text)}</span>`).join("")}</div></div>`).join("")}</div>`;
+}
+function typeHTML() {
+  const c = game.items[game.idx];
+  return `<div class="quiz"><span class="eyebrow">Seed ${game.idx + 1} of ${game.total} · ${game.right} right</span>
+    <p class="q">${esc(c.definition)}</p>
+    ${game.reveal ? `<p class="feedback ${game.reveal.ok ? "ok" : "no"}">${game.reveal.ok ? "Yes!" : "Not quite."} The term is <b>${esc(c.term)}</b>.</p><div class="rate"><button class="btn primary" id="gNext">${game.idx + 1 < game.total ? "Next seed →" : "See results"}</button></div>`
+    : `<form class="ask" id="typeForm"><label for="typeAns" class="sr">Your answer</label><input id="typeAns" autocomplete="off" placeholder="Type the term"><button class="btn primary" type="submit">Check</button><button class="btn" type="button" id="gSkip">Show me</button></form><p class="hint">Close spellings count.</p>`}
+  </div>`;
+}
+function scenHTML() {
+  const s = game.items[game.idx];
+  return `<div class="quiz"><span class="eyebrow">Situation ${game.idx + 1} of ${game.total} · ${game.right} right</span>
+    <p class="q">${esc(s.q)}</p>
+    <div class="opts">${s.opts.map((o, k) => `<button class="opt ${game.reveal ? (o === s.answer ? "right" : game.reveal.k === k ? "wrong" : "") : ""}" data-opt="${k}" ${game.reveal ? "disabled" : ""}>${esc(o)}</button>`).join("")}</div>
+    ${game.reveal ? `<p class="feedback ${game.reveal.ok ? "ok" : "no"}">${esc(s.why)}</p><div class="rate"><button class="btn primary" id="gNext">${game.idx + 1 < game.total ? "Next situation →" : "See results"}</button></div>` : ""}
+  </div>`;
+}
+function placeItem(id, bin) {
+  const it = game.items.find(x => x.id === id); if (!it || game.placed[id]) return;
+  if (it.bin === bin) {
+    game.placed[id] = bin; game.sel = null; game.shake = null;
+    if (!game.missed[id]) game.right++;
+    game.msg = "Into the barn!"; Sound.play("pop");
+    if (Object.keys(game.placed).length === game.items.length) return finishGame(), renderGames();
+  } else {
+    game.missed[id] = true; game.shake = id; game.msg = "Wrong barn. Try another one."; Sound.play("buzz");
+  }
+  renderGames();
+}
+function wireGames() {
+  const $ = id => document.getElementById(id);
+  $("gWeek").onchange = e => { game = { w: Number(e.target.value), mode: game.mode }; if (game.mode) startGame(game.mode); else renderGames(); };
+  if ($("gBack")) $("gBack").onclick = () => { game = { w: game.w, mode: null }; renderGames(); };
+  if ($("gMenu")) $("gMenu").onclick = () => { game = { w: game.w, mode: null }; renderGames(); };
+  if ($("gAgain")) $("gAgain").onclick = () => startGame(game.mode);
+  document.querySelectorAll("[data-game]").forEach(b => b.onclick = () => startGame(b.dataset.game));
+  document.querySelectorAll("[data-item]").forEach(b => {
+    b.onclick = () => { game.sel = game.sel === b.dataset.item ? null : b.dataset.item; game.shake = null; renderGames(); };
+    b.ondragstart = e => { e.dataTransfer.setData("text/plain", b.dataset.item); e.dataTransfer.effectAllowed = "move"; };
+  });
+  document.querySelectorAll("[data-bin]").forEach(b => {
+    const act = () => { if (game.sel) placeItem(game.sel, b.dataset.bin); };
+    b.onclick = act;
+    b.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); act(); } };
+    b.ondragover = e => { e.preventDefault(); b.classList.add("over"); };
+    b.ondragleave = () => b.classList.remove("over");
+    b.ondrop = e => { e.preventDefault(); b.classList.remove("over"); placeItem(e.dataTransfer.getData("text/plain"), b.dataset.bin); };
+  });
+  const next = () => { game.reveal = null; game.idx++; if (game.idx >= game.total) finishGame(); renderGames(); };
+  if ($("gNext")) { $("gNext").onclick = next; $("gNext").focus(); }
+  if ($("typeForm")) {
+    $("typeAns").focus();
+    $("typeForm").onsubmit = e => { e.preventDefault(); const ok = closeEnough($("typeAns").value, game.items[game.idx].term); if (ok) game.right++; game.reveal = { ok }; Sound.play(ok ? "pop" : "buzz"); renderGames(); };
+    $("gSkip").onclick = () => { game.reveal = { ok: false }; Sound.play("seed"); renderGames(); };
+  }
+  document.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
+    const s = game.items[game.idx], k = Number(b.dataset.opt), ok = s.opts[k] === s.answer;
+    if (ok) game.right++;
+    game.reveal = { ok, k }; Sound.play(ok ? "register" : "buzz"); renderGames();
+  });
+}
+
+/* Sound toggle */
+const st = document.getElementById("soundToggle");
+const paintSound = () => { st.textContent = Sound.on ? "Sound on" : "Sound off"; st.setAttribute("aria-pressed", String(Sound.on)); };
+st.onclick = () => { Sound.toggle(); paintSound(); };
+paintSound();
 
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => selectTab(b.dataset.tab));
 const sd = document.getElementById("startDate");
@@ -797,6 +1264,7 @@ sd.onchange = () => { if (sd.value) { state.start = sd.value; view.day = null; s
 document.getElementById("bookLine").textContent = `${COURSE.book} · 8-week planting season`;
 
 renderAll();
+connectTutor();
 connectStore().then(() => { sd.value = state.start; });
 })();
 </script>

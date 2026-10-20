@@ -306,6 +306,85 @@ WEEKS = [
     },
 ]
 
+CHAPTER_TITLES = {
+    1: "Introduction to Principles of Management",
+    2: "Personality, Attitudes, and Work Behaviors",
+    3: "History, Globalization, and Values-Based Leadership",
+    4: "Developing Mission, Vision, and Values",
+    5: "Strategizing",
+    6: "Goals and Objectives",
+    7: "Organizational Structure and Change",
+    8: "Organizational Culture",
+    9: "Social Networks",
+    10: "Leading People and Organizations",
+    11: "Decision Making",
+    12: "Communication in Organizations",
+    13: "Managing Groups and Teams",
+    14: "Motivating Employees",
+    15: "The Essentials of Control",
+    16: "Strategic Human Resource Management",
+}
+
+# Farm scenarios per week: (situation, the card term that fits, why).
+SCENARIOS = [
+    [
+        ("Your harvest boss's crew brings in the crop. Your bookkeeper's work supports it but never touches a plant. What describes the difference between their two roles?", "Line vs. staff manager", "The harvest boss contributes directly to the product (line); the bookkeeper provides supporting inputs (staff)."),
+        ("A new hire was told the job came with housing and winter work. In spring the owner drops both, and the hire feels betrayed even though nothing was written down.", "Psychological contract", "The unwritten understanding of what each side gives and gets was broken."),
+        ("Your annual report shows profit, soil health and how well the crew is paid, side by side.", "Triple bottom line", "People, planet and profit are measured together."),
+    ],
+    [
+        ("Your co-op grades every grower's wheat with the same written rules and promotes inspectors only on test scores.", "Bureaucracy (Weber)", "Written rules, impersonal treatment and merit-based promotion are Weber's ideal bureaucracy."),
+        ("The owner is sure the crew will slack off unless someone watches them every minute.", "Theory X and Theory Y", "That's a Theory X assumption: workers dislike work and must be controlled."),
+        ("Before building a hog barn, you list the neighbours, the water board and your buyers, and rate how much each could affect the project.", "Stakeholder analysis", "Identifying stakeholders and weighing their interests and influence."),
+    ],
+    [
+        ("You planned 200 acres of corn. A drought pushed you into sunflowers, and sunflowers became your main crop.", "Emergent strategy", "The strategy arose from responding to an unexpected event, not from the plan."),
+        ("Your river-bottom soil is valuable, rare and impossible for any rival to copy.", "VRIO/VRIS framework", "A resource that passes these tests can give a sustained advantage."),
+        ("Instead of saying \"pick faster\", you set \"40 crates by noon\" and post the tally every hour.", "Goal-setting theory", "Specific, difficult goals with feedback raise performance."),
+    ],
+    [
+        ("Your agronomist answers to both the crops manager and the organic-conversion project lead.", "Matrix structure", "Reporting to two managers, one functional and one project, is a matrix."),
+        ("Older hands keep saying \"we've always cut hay in June\" and drag their feet on the new rotation.", "Resistance to change", "Habit and uncertainty make people reluctant to support change."),
+        ("People who love dawn milking apply, get hired and stay. Night owls quit within months.", "Attraction-selection-attrition (ASA)", "Culture sustains itself as fitting people are attracted and kept while poor fits leave."),
+    ],
+    [
+        ("The farmers' market manager introduces organic growers to restaurant chefs who had never met.", "Brokers (bridges)", "They connect two otherwise unconnected groups."),
+        ("You give a brand-new hand step-by-step instructions, but simply hand the keys to your 20-year veteran.", "Situational leadership theory", "Leadership style matched to each follower's readiness."),
+        ("The crew lead pays a bonus per crate and only steps in when something goes wrong.", "Transactional leadership", "Contingent rewards plus management by exception."),
+    ],
+    [
+        ("You've replanted the failed field three seasons running because you've \"already sunk so much in\".", "Escalation of commitment", "Continuing a failing course because of past investment."),
+        ("The first offer for your calves was low, and you judge every later offer against it.", "Anchoring", "The first number became the reference point."),
+        ("Your foreman says harvest is \"going fine\" and leaves out the broken auger.", "Filtering", "Information was held back to manage your reaction."),
+    ],
+    [
+        ("Six people are assigned to stack hay bales, but two of them do nearly all the lifting.", "Social loafing", "People put in less effort in a group than alone."),
+        ("A picker finds out a new hire earns more for the same rows, and starts slowing down.", "Equity theory", "An unfavourable comparison with a referent pushes the picker to rebalance by cutting effort."),
+        ("Fixing the leaky barn roof stopped the complaints, but it took the county fair ribbon to get the crew excited.", "Herzberg's two-factor theory", "The roof is a hygiene factor; the ribbon (recognition) is a motivator."),
+    ],
+    [
+        ("You test seed germination before planting, so a bad batch never goes in the ground.", "Feedforward control", "It heads off a problem before the activity starts."),
+        ("Moving the wash station next to the packing shed saves the crew 400 steps a day.", "Lean production and kaizen", "Small continuous improvements that remove waste."),
+        ("You tell applicants about shovelling manure in January as well as about the sunrises.", "Realistic job preview", "Honest good-and-bad information reduces later turnover."),
+    ],
+]
+
+# The P-O-L-C sorting game: farm tasks and the function each belongs to.
+POLC_ITEMS = [
+    ("Deciding in winter which fields get corn next spring", "Planning"),
+    ("Setting a target of 95% grade-A eggs by June", "Planning"),
+    ("Mapping out a five-year move to organic", "Planning"),
+    ("Assigning two people to the planter and one to irrigation", "Organizing"),
+    ("Drawing up who reports to the harvest boss", "Organizing"),
+    ("Setting up a separate team for the farm shop", "Organizing"),
+    ("Rallying the tired crew before the last field", "Leading"),
+    ("Coaching a new hand through their first calving", "Leading"),
+    ("Explaining to the crew why the new rotation matters", "Leading"),
+    ("Comparing yield per acre against the target", "Controlling"),
+    ("Checking feed spending against the budget", "Controlling"),
+    ("Inspecting packed crates for bruised fruit", "Controlling"),
+]
+
 
 def build():
     weeks = []
@@ -324,5 +403,15 @@ def build():
                 })
             sections = sorted({c["section"] for c in out}, key=lambda s: [int(x) for x in s.split(".")])
             days.append({"title": title, "chapter": chapter, "sections": sections, "cards": out})
-        weeks.append({"title": wk["title"], "chapters": wk["chapters"], "build": wk["build"], "days": days})
-    return {"book": BOOK, "weeks": weeks}
+        terms = {c["term"] for d in days for c in d["cards"]}
+        scenarios = []
+        for q, answer, why in SCENARIOS[w - 1]:
+            assert answer in terms, f"scenario answer not a week {w} card: {answer}"
+            scenarios.append({"q": q, "answer": answer, "why": why})
+        chapter_nums = sorted({int(c["section"].split(".")[0]) for d in days for c in d["cards"]})
+        weeks.append({
+            "title": wk["title"], "chapters": wk["chapters"], "build": wk["build"], "days": days,
+            "chapterNames": [{"num": n, "title": CHAPTER_TITLES[n]} for n in chapter_nums],
+            "scenarios": scenarios,
+        })
+    return {"book": BOOK, "weeks": weeks, "polc": [{"text": t, "fn": f} for t, f in POLC_ITEMS]}
