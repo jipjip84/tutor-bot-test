@@ -7,6 +7,10 @@ A farm-themed study companion for *Principles of Management* (LibreTexts).
 - **You decide when a day is done, and you can work ahead.** Press "Mark lesson complete" to log a lesson, then "Keep going" to jump to the next unfinished one.
 - **Milestones.** Each finished week (all five lessons, plus 80% or better on Market Day) builds something on your farm: a barn, hens, a tractor, a silo, cows, beehives, an orchard, and finally the farmhouse. You also earn ribbons for streaks, cards harvested, perfect quizzes and greenhouse reviews.
 
+- **A daily quiz and a Needs work tracker.**
+  - Every lesson day has a 5-question quiz on that day's cards plus one review question. Rest days get a review quiz.
+  - Any question you miss in a daily quiz, Market Day or a field game is added to the Needs work tab.
+  - Answer a tracked concept right twice in a row and it moves to Improved.
 - **Sound, video and interactive extras.**
   - Farm sound effects, with a Sound on/off switch.
   - "Read aloud" on every card.

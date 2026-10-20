@@ -130,7 +130,7 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 .complete-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .linkish { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 4px; }
 .libbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
-.libbar select { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--paper); color: var(--ink); }
+.libbar select, .settings select { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--paper); color: var(--ink); }
 .library { max-width: 720px; width: 100%; margin: 0 auto; display: grid; gap: 14px; }
 .hint { text-align: center; color: var(--muted); font-size: .85rem; }
 
@@ -241,6 +241,25 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 .feedback.ok { background: var(--field); color: var(--field-ink); }
 .feedback.no { background: var(--wheat-soft); border: 1px solid var(--wheat); }
 
+/* Quizzes + tracker */
+.quiz.long-opts .opts { grid-template-columns: minmax(0, 1fr); }
+.quiz.long-opts .opt { font-weight: 400; }
+.missed { text-align: left; background: var(--wheat-soft); border: 1px solid var(--wheat); border-radius: 10px; padding: 10px 14px; width: 100%; max-width: 480px; }
+.missed ul { margin: 6px 0 0; padding-left: 20px; }
+.weak { display: grid; gap: 16px; }
+.weak-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.weak-list { display: grid; gap: 10px; }
+.weak-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto auto; gap: 14px; align-items: center; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.weak-row > svg { width: 52px; height: 52px; }
+.weak-main { display: grid; gap: 2px; min-width: 0; }
+.weak-acts { display: flex; gap: 6px; align-items: center; }
+.pill { font-family: var(--font-mono); font-size: .75rem; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.bad { background: var(--barn); color: #fff; }
+.pill.warn { background: var(--wheat); color: #1e1a10; }
+.pill.good { background: var(--field); color: var(--field-ink); }
+.study-art { border-radius: 10px; border: 2px solid var(--ink); }
+.study-art svg { width: 140px; }
+
 /* Toast + burst */
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 140%); background: var(--ink); color: var(--paper); border-radius: 14px; padding: 12px 18px; display: flex; gap: 12px; align-items: center; max-width: min(92vw, 460px); transition: transform .4s cubic-bezier(.2,1.3,.4,1); z-index: 50; }
 .toast.show { transform: translate(-50%, 0); }
@@ -256,6 +275,9 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 @media (max-width: 520px) {
   .opts { grid-template-columns: minmax(0,1fr); }
   .game-menu { grid-template-columns: minmax(0, 1fr); }
+  .weak-row { grid-template-columns: 44px minmax(0, 1fr); }
+  .weak-row > svg { width: 44px; height: 44px; }
+  .weak-row .pill, .weak-acts { grid-column: 2; justify-self: start; }
   .complete { grid-template-columns: 44px minmax(0, 1fr); }
   .complete svg { width: 44px; height: 44px; }
   .complete .btn, .complete .linkish, .complete-actions { grid-column: 1 / -1; justify-content: flex-start; }
@@ -294,6 +316,7 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
     <button role="tab" id="tab-calendar" aria-selected="false" data-tab="calendar">Planting calendar</button>
     <button role="tab" id="tab-library" aria-selected="false" data-tab="library">Card barn</button>
     <button role="tab" id="tab-games" aria-selected="false" data-tab="games">Field games</button>
+    <button role="tab" id="tab-weak" aria-selected="false" data-tab="weak">Needs work</button>
     <button role="tab" id="tab-ribbons" aria-selected="false" data-tab="ribbons">Ribbons</button>
   </nav>
 
@@ -301,6 +324,7 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
   <section class="panel" id="panel-calendar" hidden></section>
   <section class="panel" id="panel-library" hidden></section>
   <section class="panel" id="panel-games" hidden></section>
+  <section class="panel" id="panel-weak" hidden></section>
   <section class="panel" id="panel-ribbons" hidden></section>
 </div>
 
@@ -483,6 +507,9 @@ const RIBBONS = [
   { id: "halfway", title: "Halfway Harvest", desc: "Finish four full weeks. The silo is half full.", color: "#c98a12", test: () => [0,1,2,3].every(weekComplete) },
   { id: "early", title: "Early Riser", desc: "Finish a lesson before its scheduled day.", color: "#f4c542", test: () => Object.entries(state.lessonsDone).some(([i, d]) => d < iso(addDays(parseISO(state.start), Number(i)))) },
   { id: "double", title: "Double Shift", desc: "Finish two or more lessons in one day.", color: "#b3372c", test: () => { const c = {}; return Object.values(state.lessonsDone).some(d => (c[d] = (c[d] || 0) + 1) >= 2); } },
+  { id: "quiz7", title: "Quiz Regular", desc: "Finish seven daily quizzes.", color: "#3a7fb0", test: () => Object.keys(state.dquiz || {}).length >= 7 },
+  { id: "cleanrows", title: "Clean Rows", desc: "Get a perfect score on a daily quiz.", color: "#2e6a3e", test: () => (state.dquizPerfect || 0) >= 1 },
+  { id: "weeds5", title: "Weed Puller", desc: "Move five concepts from Needs work to Improved.", color: "#6a4930", test: () => (state.improvedCount || 0) >= 5 },
   { id: "games", title: "Fair Games Winner", desc: "Get 100% in any field game.", color: "#6cbf7d", test: () => !!state.gamesPerfect },
   { id: "curious", title: "Curious Calf", desc: "Ask the farm tutor five questions.", color: "#e48b84", test: () => (state.tutorQs || 0) >= 5 },
   { id: "streak3", title: "Three Days of Rain", desc: "Study three days in a row.", color: "#3a7fb0", test: () => bestStreak() >= 3 },
@@ -570,6 +597,7 @@ function renderToday() {
     </div>`;
   let main = "";
   if (view.mode === "greenhouse") main = greenhouseHTML();
+  else if (view.mode === "dquiz") main = dquizHTML();
   else if (info.kind === "lesson") main = lessonHTML(info);
   else if (info.kind === "market") main = marketHTML(info);
   else main = restHTML(info);
@@ -613,6 +641,7 @@ function lessonHTML(info) {
       <button class="btn primary" id="known">Harvested it</button>
     </div>
     <p class="hint">Tap the packet or press space to flip it. Use the arrow keys to move between cards. ${known} of ${cards.length} harvested today.</p>
+    ${dquizBoxHTML(info)}
     ${complete}`;
 }
 function navHTML(cards, cur) {
@@ -656,7 +685,8 @@ function restHTML(info) {
     <p>Fallow days keep the soil rich. Take the day off, or tend the greenhouse if any cards are still growing.</p>
     ${next ? `<p><b>Coming up in week ${info.w + 2}:</b> ${esc(next.title)} (${esc(next.chapters)}). You'll build: ${esc(next.build)}.</p>` : `<p>That's the end of the season. Check your ribbons.</p>`}
     <div class="rate">${keepGoingHTML(view.day)}</div>
-  </div>`;
+  </div>
+  ${dquizBoxHTML(info)}`;
 }
 function greenhouseHTML() {
   const g = view.greenhouse;
@@ -681,6 +711,7 @@ function sideHTML(info) {
   return `
     <div class="box"><h3>${view.day > todayIndex() ? "Chores (working ahead)" : "Today's chores"}</h3>${plan}</div>
     <div class="box"><h3>This week's build</h3><div style="display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center">${art(BUILDS[info.w + 1].key)}<div><b>${esc(info.week.build)}</b><p class="small">Finish all five lesson days and the Market Day quiz with 80% or better.</p></div></div></div>
+    <div class="box"><h3>Needs work</h3><p class="small">${weakOpen().length ? `${weakOpen().length} concept${weakOpen().length === 1 ? "" : "s"} you missed in quizzes. Get each right twice in a row to pull the weed.` : "Nothing yet. Missed quiz questions land here."}</p><button class="btn" id="openWeak">Open the tracker</button></div>
     <div class="box"><h3>Greenhouse</h3><p class="small">${growing ? `${growing} card${growing === 1 ? " is" : "s are"} still growing. A quick review turns them into harvest.` : "No cards are waiting for review."}</p><button class="btn" id="openGreenhouse" ${growing ? "" : "disabled"}>Tend the greenhouse</button></div>`;
 }
 
@@ -691,7 +722,8 @@ function wireToday(info) {
   $("nextDay").onclick = () => go(view.day + 1);
   $("goToday").onclick = () => go(todayIndex());
   wirePacket(document.getElementById("panel-today"), v => view.flipped = v, () => view.flipped);
-  if (info.kind === "lesson" && view.mode !== "greenhouse") {
+  wireDquiz(info);
+  if (info.kind === "lesson" && view.mode === "lesson") {
     const n = info.lesson.cards.length;
     const move = k => { view.card = (k + n) % n; view.flipped = false; renderToday(); };
     $("prevCard").onclick = () => move(view.card - 1);
@@ -709,13 +741,14 @@ function wireToday(info) {
   } else keyNav = null;
   if ($("known")) $("known").onclick = () => rate("known", info);
   if ($("growing")) $("growing").onclick = () => rate("growing", info);
+  if ($("openWeak")) $("openWeak").onclick = () => selectTab("weak");
   if ($("openGreenhouse")) $("openGreenhouse").onclick = () => {
     view.mode = "greenhouse"; view.flipped = false;
     view.greenhouse = { cards: allCards().filter(c => state.cards[c.id] === "growing").sort(() => Math.random() - .5), idx: 0 };
     renderToday();
   };
   if ($("leaveGreenhouse")) $("leaveGreenhouse").onclick = () => { view.mode = "lesson"; view.greenhouse = null; view.flipped = false; renderToday(); };
-  document.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(Number(b.dataset.k), info));
+  document.querySelectorAll(".opt[data-k]").forEach(b => b.onclick = () => answer(Number(b.dataset.k), info));
   if ($("keepGoing")) $("keepGoing").onclick = () => { go(Number($("keepGoing").dataset.to)); window.scrollTo({ top: document.getElementById("panel-today").offsetTop - 20, behavior: "smooth" }); };
   if ($("retryQuiz")) $("retryQuiz").onclick = () => { view.quiz = null; renderToday(); };
 }
@@ -740,9 +773,10 @@ function answer(k, info) {
   if (q.answered) return;
   q.answered = true;
   const ok = it.opts[k].id === it.card.id;
+  if (ok) trackHit(it.card.id); else trackMiss(it.card.id, "market");
   if (ok) { q.right++; state.xp += 5; }
   Sound.play(ok ? "register" : "buzz");
-  document.querySelectorAll(".opt").forEach((b, j) => { b.disabled = true; if (it.opts[j].id === it.card.id) b.classList.add("right"); else if (j === k) b.classList.add("wrong"); });
+  document.querySelectorAll(".opt[data-k]").forEach((b, j) => { b.disabled = true; if (it.opts[j].id === it.card.id) b.classList.add("right"); else if (j === k) b.classList.add("wrong"); });
   setTimeout(() => {
     q.idx++; q.answered = false;
     if (q.idx >= q.items.length) {
@@ -857,10 +891,10 @@ function selectTab(name) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
   currentTab = name;
   if (name === "games") renderGames();
-  ["today", "calendar", "library", "games", "ribbons"].forEach(n => document.getElementById("panel-" + n).hidden = n !== name);
+  ["today", "calendar", "library", "games", "weak", "ribbons"].forEach(n => document.getElementById("panel-" + n).hidden = n !== name);
   renderAll();
 }
-function renderAll() { renderFarm(); renderStats(); renderToday(); renderCalendar(); renderLibrary(); renderRibbons(); }
+function renderAll() { renderFarm(); renderStats(); renderToday(); renderCalendar(); renderLibrary(); renderWeak(); renderRibbons(); }
 
 /* ================= Sound ================= */
 const Sound = (() => {
@@ -1210,10 +1244,11 @@ function placeItem(id, bin) {
   const it = game.items.find(x => x.id === id); if (!it || game.placed[id]) return;
   if (it.bin === bin) {
     game.placed[id] = bin; game.sel = null; game.shake = null;
-    if (!game.missed[id]) game.right++;
+    if (!game.missed[id]) { game.right++; trackHit(id); }
     game.msg = "Into the barn!"; Sound.play("pop");
     if (Object.keys(game.placed).length === game.items.length) return finishGame(), renderGames();
   } else {
+    if (!game.missed[id]) trackMiss(id, "games");
     game.missed[id] = true; game.shake = id; game.msg = "Wrong barn. Try another one."; Sound.play("buzz");
   }
   renderGames();
@@ -1241,14 +1276,165 @@ function wireGames() {
   if ($("gNext")) { $("gNext").onclick = next; $("gNext").focus(); }
   if ($("typeForm")) {
     $("typeAns").focus();
-    $("typeForm").onsubmit = e => { e.preventDefault(); const ok = closeEnough($("typeAns").value, game.items[game.idx].term); if (ok) game.right++; game.reveal = { ok }; Sound.play(ok ? "pop" : "buzz"); renderGames(); };
-    $("gSkip").onclick = () => { game.reveal = { ok: false }; Sound.play("seed"); renderGames(); };
+    $("typeForm").onsubmit = e => { e.preventDefault(); const ok = closeEnough($("typeAns").value, game.items[game.idx].term); if (ok) { game.right++; trackHit(game.items[game.idx].id); } else trackMiss(game.items[game.idx].id, "games"); save(); game.reveal = { ok }; Sound.play(ok ? "pop" : "buzz"); renderGames(); };
+    $("gSkip").onclick = () => { game.reveal = { ok: false }; trackMiss(game.items[game.idx].id, "games"); save(); Sound.play("seed"); renderGames(); };
   }
   document.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
     const s = game.items[game.idx], k = Number(b.dataset.opt), ok = s.opts[k] === s.answer;
-    if (ok) game.right++;
+    const sc = allCards().find(c => c.term === s.answer && weekOfCard(c.id) === game.w);
+    if (ok) { game.right++; if (sc) trackHit(sc.id); } else if (sc) trackMiss(sc.id, "games");
+    save();
     game.reveal = { ok, k }; Sound.play(ok ? "register" : "buzz"); renderGames();
   });
+}
+
+/* ================= Daily quiz + Needs-work tracker ================= */
+function weakMap() { return state.weak || (state.weak = {}); }
+function weakOpen() { return Object.entries(weakMap()).filter(([, w]) => !w.improved).map(([id]) => id); }
+const SOURCE_NAMES = { daily: "Daily quiz", market: "Market Day", games: "Field games", tracker: "Weak-spot practice" };
+function trackMiss(id, source) {
+  if (!CARD_BY_ID.has(id)) return;
+  const w = weakMap()[id] || (weakMap()[id] = { misses: 0, added: iso(new Date()), sources: [] });
+  w.misses++; w.streak = 0; w.improved = false; w.last = iso(new Date());
+  if (!w.sources.includes(source)) w.sources.push(source);
+}
+function trackHit(id) {
+  const w = weakMap()[id];
+  if (!w || w.improved) return;
+  w.streak = (w.streak || 0) + 1;
+  if (w.streak >= 2) {
+    w.improved = iso(new Date());
+    state.improvedCount = (state.improvedCount || 0) + 1;
+    celebrate({ sound: false, title: "Weed pulled!", desc: `${CARD_BY_ID.get(id).term} moved to Improved.`, color: "#4f9a55" });
+  }
+}
+
+/* Question builder: three question styles, distractors from the same week where possible. */
+function weekOfCard(id) { return Number(id.match(/^W(\d+)/)[1]) - 1; }
+function buildQuiz(cards, source) {
+  const kinds = shuffle(["def", "farm", "term", "def", "farm", "term", "def", "farm"]);
+  const items = cards.map((card, i) => {
+    let pool = WEEKS[weekOfCard(card.id)].days.flatMap(d => d.cards).filter(c => c.id !== card.id);
+    if (pool.length < 3) pool = allCards().filter(c => c.id !== card.id);
+    return { card, kind: kinds[i % kinds.length], opts: shuffle([card, ...shuffle(pool).slice(0, 3)]) };
+  });
+  return { items, idx: 0, right: 0, reveal: null, missed: [], source };
+}
+function quizHTML(q, scope, doneActions) {
+  if (q.idx >= q.items.length) {
+    const pct = Math.round(q.right / q.items.length * 100);
+    return `<div class="done-card">${art(pct === 100 ? "basket" : "seedling")}
+      <h2>${pct === 100 ? "Clean rows. Perfect score!" : pct >= 60 ? "Solid quiz" : "Some weeds to pull"}</h2>
+      <p>${q.right} of ${q.items.length} right (${pct}%). +${q.right * 3} bushels.</p>
+      ${q.missed.length ? `<div class="missed"><b>Added to Needs work:</b><ul>${q.missed.map(c => `<li>${esc(c.term)} <span class="small">§${esc(c.section)}</span></li>`).join("")}</ul></div>` : ""}
+      <div class="rate">${doneActions}</div></div>`;
+  }
+  const it = q.items[q.idx], c = it.card;
+  const prompt = it.kind === "def" ? ["Which term matches this definition?", c.definition]
+    : it.kind === "farm" ? ["Which concept does this farm example show?", c.farm]
+    : ["What does this term mean?", c.term];
+  const optText = o => it.kind === "term" ? o.definition : o.term;
+  return `<div class="quiz ${it.kind === "term" ? "long-opts" : ""}">
+    <span class="eyebrow">Question ${q.idx + 1} of ${q.items.length} · ${q.right} right${weakMap()[c.id] && !weakMap()[c.id].improved ? " · from your Needs work list" : ""}</span>
+    <p class="small">${prompt[0]}</p>
+    <p class="q">${esc(prompt[1])}</p>
+    <div class="opts">${it.opts.map((o, k) => `<button class="opt ${q.reveal ? (o.id === c.id ? "right" : q.reveal.k === k ? "wrong" : "") : ""}" data-qopt="${k}" ${q.reveal ? "disabled" : ""}>${esc(optText(o))}</button>`).join("")}</div>
+    ${q.reveal ? `<p class="feedback ${q.reveal.ok ? "ok" : "no"}">${q.reveal.ok ? "Right!" : `Not quite. It's <b>${esc(c.term)}</b>, added to your Needs work list.`} ${esc(c.term)}: ${esc(c.definition)}</p>
+      <div class="rate"><button class="btn primary" id="${scope}Next">${q.idx + 1 < q.items.length ? "Next question →" : "See results"}</button></div>` : ""}
+  </div>`;
+}
+function wireQuiz(root, q, scope, rerender, onFinish) {
+  root.querySelectorAll("[data-qopt]").forEach(b => b.onclick = () => {
+    if (q.reveal) return;
+    const it = q.items[q.idx], k = Number(b.dataset.qopt), ok = it.opts[k].id === it.card.id;
+    q.reveal = { ok, k };
+    if (ok) { q.right++; trackHit(it.card.id); Sound.play("pop"); }
+    else { q.missed.push(it.card); trackMiss(it.card.id, q.source); Sound.play("buzz"); }
+    save(); rerender();
+  });
+  const nx = root.querySelector("#" + scope + "Next");
+  if (nx) { if (!root.hidden) nx.focus(); nx.onclick = () => { q.reveal = null; q.idx++; if (q.idx >= q.items.length) { state.xp += q.right * 3; onFinish(q); markActive(); checkRibbons(); save(); renderAll(); } else rerender(); }; }
+}
+
+/* Daily quiz on lesson and fallow days */
+function dailyQuizCards(info) {
+  const today = info.kind === "lesson" ? info.lesson.cards.slice() : [];
+  const open = shuffle(weakOpen()).map(id => CARD_BY_ID.get(id)).filter(c => !today.includes(c));
+  const earlier = shuffle(WEEKS.slice(0, info.w + 1).flatMap((wk, w) => wk.days.flatMap((d, di) => (w * 7 + di < view.day) ? d.cards : []))).filter(c => !today.includes(c));
+  const extra = info.kind === "lesson" ? 1 : 5;
+  const review = [...open, ...earlier].slice(0, extra);
+  const fill = shuffle(info.week.days.flatMap(d => d.cards)).filter(c => !today.includes(c) && !review.includes(c));
+  return shuffle([...shuffle(today), ...review, ...fill].slice(0, 5));
+}
+function dquizBoxHTML(info) {
+  const r = (state.dquiz || {})[view.day];
+  const what = info.kind === "lesson" ? "5 quick questions: today's cards plus one review" : weakOpen().length ? "5 questions from your Needs work list and this week" : "5 review questions from this week";
+  return `<div class="complete ${r ? "done" : ""}">${art(r ? "ribbon" : "almanac", "#4f9a55")}<div><b>${r ? `Daily quiz: ${r.right}/${r.total}` : "Daily quiz"}</b><span>${r ? "Missed questions are on your Needs work list. Retake it any time." : what}.</span></div><button class="btn ${r ? "" : "gold"}" id="dqStart">${r ? "Retake quiz" : "Take today's quiz"}</button></div>`;
+}
+function dquizHTML() {
+  return quizHTML(view.dq, "dq", `<button class="btn primary" id="dqBack">Back to the lesson</button><button class="btn" id="dqWeak">Open Needs work</button>`);
+}
+function wireDquiz(info) {
+  const $ = id => document.getElementById(id);
+  if ($("dqStart")) $("dqStart").onclick = () => { view.mode = "dquiz"; view.dq = buildQuiz(dailyQuizCards(info), "daily"); renderToday(); };
+  if (view.mode !== "dquiz") return;
+  const root = document.getElementById("panel-today");
+  wireQuiz(root, view.dq, "dq", renderToday, q => {
+    state.dquiz = state.dquiz || {};
+    const prev = state.dquiz[view.day];
+    state.dquiz[view.day] = { right: Math.max(q.right, prev ? prev.right : 0), total: q.items.length, date: iso(new Date()) };
+    if (q.right === q.items.length) state.dquizPerfect = (state.dquizPerfect || 0) + 1;
+    Sound.play(q.right === q.items.length ? "fanfare" : "seed");
+  });
+  if ($("dqBack")) $("dqBack").onclick = () => { view.mode = "lesson"; view.dq = null; renderToday(); };
+  if ($("dqWeak")) $("dqWeak").onclick = () => { view.mode = "lesson"; view.dq = null; selectTab("weak"); };
+}
+
+/* Needs-work tracker tab */
+let weak = { filter: "open", q: null, study: null };
+function renderWeak() {
+  const el = document.getElementById("panel-weak");
+  const all = Object.entries(weakMap()).map(([id, w]) => ({ id, w, c: CARD_BY_ID.get(id) })).filter(x => x.c)
+    .sort((a, b) => (!!a.w.improved - !!b.w.improved) || b.w.misses - a.w.misses || (b.w.last || "").localeCompare(a.w.last || ""));
+  const open = all.filter(x => !x.w.improved), done = all.filter(x => x.w.improved);
+  document.getElementById("tab-weak").textContent = open.length ? `Needs work (${open.length})` : "Needs work";
+  if (weak.q) {
+    el.innerHTML = `<div class="library"><div class="libbar"><div><span class="eyebrow">Needs work</span><h2>Weak-spot practice</h2></div><button class="btn" id="wqQuit">Back to the list</button></div>
+      ${quizHTML(weak.q, "wq", `<button class="btn primary" id="wqAgain">Practice again</button><button class="btn" id="wqQuit2">Back to the list</button>`)}</div>`;
+    wireQuiz(el, weak.q, "wq", renderWeak, q => Sound.play(q.right === q.items.length ? "fanfare" : "seed"));
+    const back = () => { weak.q = null; renderWeak(); };
+    ["wqQuit", "wqQuit2"].forEach(id => { const b = document.getElementById(id); if (b) b.onclick = back; });
+    const ag = document.getElementById("wqAgain"); if (ag) ag.onclick = startWeakPractice;
+    return;
+  }
+  const list = weak.filter === "open" ? open : weak.filter === "done" ? done : all;
+  const status = w => w.improved ? `<span class="pill good">Improved ✓</span>` : w.streak ? `<span class="pill warn">Improving ${w.streak}/2</span>` : `<span class="pill bad">Needs work</span>`;
+  el.innerHTML = `<div class="weak">
+    <div class="libbar"><div><span class="eyebrow">The weed patch</span><h2>Needs work</h2><p class="small">Every question you miss in a daily quiz, Market Day or a field game lands here. Answer it right twice in a row and it moves to Improved.</p></div>
+      <button class="btn gold" id="wqStart" ${open.length ? "" : "disabled"}>Practice weak spots${open.length ? ` (${Math.min(8, open.length)})` : ""}</button></div>
+    <div class="weak-sum"><div class="stat"><b>${open.length}</b><span>To revisit</span></div><div class="stat"><b>${done.length}</b><span>Improved</span></div><div class="stat"><b>${all.reduce((n, x) => n + x.w.misses, 0)}</b><span>Total misses logged</span></div></div>
+    <div class="settings"><label for="weakFilter">Show</label><select id="weakFilter"><option value="open" ${weak.filter === "open" ? "selected" : ""}>Needs work</option><option value="done" ${weak.filter === "done" ? "selected" : ""}>Improved</option><option value="all" ${weak.filter === "all" ? "selected" : ""}>Everything</option></select></div>
+    ${list.length ? `<div class="weak-list">${list.map(({ id, w, c }) => `<article class="weak-row">
+        ${art(c.art)}
+        <div class="weak-main"><b>${esc(c.term)}</b><span class="small">§${esc(c.section)} · missed ${w.misses}× · last ${fmt(parseISO(w.last))} · ${w.sources.map(s => SOURCE_NAMES[s] || s).join(", ")}</span></div>
+        ${status(w)}
+        <div class="weak-acts"><button class="btn small" data-study="${id}">Study card</button>${w.improved ? "" : `<button class="linkish" data-drop="${id}">Remove</button>`}</div>
+      </article>`).join("")}</div>`
+    : `<div class="done-card">${art("seedling")}<h2>${weak.filter === "done" ? "Nothing improved yet" : "No weeds yet"}</h2><p>${weak.filter === "done" ? "Get a tracked question right twice in a row to move it here." : "Questions you miss in daily quizzes, Market Day and field games will show up here so you can come back to them."}</p></div>`}
+  </div>`;
+  document.getElementById("weakFilter").onchange = e => { weak.filter = e.target.value; renderWeak(); };
+  document.getElementById("wqStart").onclick = startWeakPractice;
+  el.querySelectorAll("[data-drop]").forEach(b => b.onclick = () => { delete weakMap()[b.dataset.drop]; save(); renderWeak(); });
+  el.querySelectorAll("[data-study]").forEach(b => b.onclick = () => {
+    const c = CARD_BY_ID.get(b.dataset.study);
+    openModal(`<span class="eyebrow">Study card · §${esc(c.section)}</span><h2>${esc(c.term)}</h2><div class="packet-art study-art">${art(c.art)}</div><p class="def">${esc(c.definition)}</p><div class="onfarm">${art(c.art)}<div><b>On the farm</b>${esc(c.farm)}</div></div>${cardActionsHTML(c)}`);
+  });
+}
+function startWeakPractice() {
+  const ids = shuffle(weakOpen()).slice(0, 8);
+  if (!ids.length) return;
+  weak.q = buildQuiz(ids.map(id => CARD_BY_ID.get(id)), "tracker");
+  renderWeak();
 }
 
 /* Sound toggle */
