@@ -1,0 +1,681 @@
+<title>Harvest Ledger</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Courier+Prime:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: a farm almanac. Growing farm scene up top, seed-packet flash cards in the middle, planting calendar and fair ribbons below. */
+:root {
+  --bg: #eef2e6;
+  --paper: #fbfbf4;
+  --ink: #1e2a1c;
+  --muted: #5a6955;
+  --line: #d3dbc7;
+  --field: #2e6a3e;
+  --field-ink: #ffffff;
+  --wheat: #c98a12;
+  --wheat-soft: #f6e6bd;
+  --barn: #b3372c;
+  --sky: #cfe5f0;
+  --sky-2: #e9f3f6;
+  --soil: #6a4930;
+  --good: #2e6a3e;
+  --warn: #b06d00;
+  --font-display: "Alfa Slab One", "Rockwell", "Roboto Slab", Georgia, serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Courier Prime", "Courier New", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111813; --paper: #1a241c; --ink: #e6ede0; --muted: #9dad97; --line: #2e3d30;
+    --field: #6cbf7d; --field-ink: #0f1a12; --wheat: #f0b640; --wheat-soft: #3a2f16; --barn: #e46a5e;
+    --sky: #1c3242; --sky-2: #223a4b; --soil: #a37b5b; --good: #6cbf7d; --warn: #f0b640;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111813; --paper: #1a241c; --ink: #e6ede0; --muted: #9dad97; --line: #2e3d30;
+  --field: #6cbf7d; --field-ink: #0f1a12; --wheat: #f0b640; --wheat-soft: #3a2f16; --barn: #e46a5e;
+  --sky: #1c3242; --sky-2: #223a4b; --soil: #a37b5b; --good: #6cbf7d; --warn: #f0b640;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 22px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: .01em; }
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.8rem); line-height: 1.05; }
+h2 { font-size: 1.45rem; line-height: 1.15; }
+h3 { font-size: 1.1rem; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--wheat); outline-offset: 2px; }
+
+/* ---------- Header + farm ---------- */
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+header.top .intro { display: grid; gap: 6px; min-width: 0; }
+header.top .intro p { color: var(--muted); max-width: 60ch; }
+.farm { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid var(--ink); background: var(--sky); }
+.farm svg { display: block; width: 100%; height: auto; }
+.farm .locked { opacity: .16; filter: grayscale(1); }
+.farm .unlocked { animation: rise .7s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes rise { from { transform: translateY(12px); opacity: .2; } to { transform: none; opacity: 1; } }
+.farm-cap { position: absolute; left: 12px; bottom: 10px; background: var(--paper); color: var(--ink); border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px; font-family: var(--font-mono); font-size: .8rem; }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stat { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; }
+.stat b { font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat span { font-size: .85rem; color: var(--muted); }
+.bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; background: var(--field); border-radius: 99px; transition: width .5s; }
+
+/* ---------- Tabs ---------- */
+nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); }
+nav.tabs button { background: transparent; border: 2px solid transparent; border-bottom: 0; padding: 8px 16px; border-radius: 10px 10px 0 0; color: var(--muted); font-weight: 700; position: relative; top: 2px; }
+nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--ink); border-color: var(--ink); border-bottom: 2px solid var(--paper); }
+.panel { display: grid; gap: 20px; }
+
+/* ---------- Today ---------- */
+.today { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 22px; align-items: start; }
+.lesson-head { display: grid; gap: 6px; }
+.lesson-head .when { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: .78rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); color: var(--muted); }
+.chip.done { background: var(--field); color: var(--field-ink); border-color: var(--field); }
+.chip.market { background: var(--wheat-soft); color: var(--ink); border-color: var(--wheat); }
+.daynav { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 2px solid var(--ink); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 6px 16px; font-weight: 700; }
+.btn:hover { background: var(--sky-2); }
+.btn.primary { background: var(--field); color: var(--field-ink); border-color: var(--field); }
+.btn.gold { background: var(--wheat); color: #1e1a10; border-color: var(--wheat); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Seed packet card */
+.deck { display: grid; gap: 14px; }
+.packet { perspective: 1400px; cursor: pointer; }
+.packet-inner { position: relative; transition: transform .55s cubic-bezier(.3,.7,.2,1); transform-style: preserve-3d; min-height: 430px; }
+.packet.flipped .packet-inner { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--paper); border: 2px solid var(--ink); border-radius: 6px 6px 14px 14px; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
+.face::before { content: ""; height: 14px; background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 12px); opacity: .18; }
+.face.back { transform: rotateY(180deg); }
+.packet-art { background: var(--sky); border-block: 2px solid var(--ink); display: grid; place-items: center; padding: 10px; }
+.packet-art svg { width: min(220px, 60%); height: auto; }
+.face-body { padding: 16px 20px; display: grid; gap: 8px; align-content: start; }
+.face-foot { display: flex; justify-content: space-between; gap: 10px; padding: 8px 20px 12px; font-family: var(--font-mono); font-size: .75rem; color: var(--muted); border-top: 1px dashed var(--line); flex-wrap: wrap; }
+.term { font-family: var(--font-display); font-size: clamp(1.5rem, 3.6vw, 2.1rem); line-height: 1.1; text-wrap: balance; }
+.prompt-line { color: var(--muted); }
+.back-grid { display: grid; gap: 12px; padding: 18px 20px; align-content: start; overflow-y: auto; }
+.back-grid .def { font-size: 1.08rem; max-width: 62ch; }
+.onfarm { background: var(--wheat-soft); border: 1px solid var(--wheat); border-radius: 10px; padding: 10px 12px; display: grid; grid-template-columns: 54px minmax(0,1fr); gap: 10px; align-items: center; }
+.onfarm svg { width: 54px; height: 54px; }
+.onfarm b { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; display: block; color: var(--muted); }
+.rate { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.dots { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.dots i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); background: transparent; }
+.dots i.known { background: var(--field); border-color: var(--field); }
+.dots i.growing { background: var(--wheat); border-color: var(--wheat); }
+.dots i.cur { outline: 2px solid var(--wheat); outline-offset: 2px; }
+.hint { text-align: center; color: var(--muted); font-size: .85rem; }
+
+.side { display: grid; gap: 14px; }
+.box { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; }
+.box h3 { font-size: 1rem; }
+.box ol, .box ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.box .small { font-size: .88rem; color: var(--muted); }
+
+.done-card { background: var(--paper); border: 2px solid var(--ink); border-radius: 14px; padding: 22px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+.done-card svg { width: 120px; height: 120px; }
+
+/* Market day quiz */
+.quiz { background: var(--paper); border: 2px solid var(--ink); border-radius: 14px; padding: 18px 20px; display: grid; gap: 14px; }
+.quiz .q { font-size: 1.1rem; max-width: 64ch; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+.opt { text-align: left; border: 2px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 10px; padding: 10px 12px; font-weight: 600; }
+.opt:hover:not(:disabled) { border-color: var(--ink); }
+.opt.right { border-color: var(--good); background: var(--field); color: var(--field-ink); }
+.opt.wrong { border-color: var(--barn); text-decoration: line-through; }
+
+/* ---------- Calendar ---------- */
+.weeks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.week { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.week-head { display: grid; grid-template-columns: 72px minmax(0,1fr); gap: 12px; align-items: center; padding: 12px 14px; background: var(--sky-2); border-bottom: 1px solid var(--line); }
+.week-head svg { width: 72px; height: 60px; }
+.week-head .eyebrow { font-size: .7rem; }
+.week-head p { font-size: .85rem; color: var(--muted); }
+.week.complete .week-head { background: var(--wheat-soft); }
+.days { list-style: none; margin: 0; padding: 6px 0; display: grid; }
+.days li button { width: 100%; display: grid; grid-template-columns: 74px minmax(0,1fr) auto; gap: 10px; align-items: center; text-align: left; background: transparent; border: 0; padding: 6px 14px; color: var(--ink); }
+.days li button:hover { background: var(--bg); }
+.days li .d { font-family: var(--font-mono); font-size: .76rem; color: var(--muted); }
+.days li .t { font-size: .92rem; min-width: 0; }
+.days li.today-row button { background: var(--sky-2); font-weight: 700; }
+.mark { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: .7rem; }
+.mark.ok { background: var(--field); border-color: var(--field); color: var(--field-ink); }
+.mark.rest { border-style: dashed; }
+
+/* ---------- Ribbons ---------- */
+.ribbons { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.ribbon { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 12px; align-items: center; }
+.ribbon svg { width: 56px; height: 72px; }
+.ribbon.locked svg { opacity: .25; filter: grayscale(1); }
+.ribbon.locked h3 { color: var(--muted); }
+.ribbon p { font-size: .85rem; color: var(--muted); }
+.ribbon h3 { font-size: .98rem; }
+
+.settings { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: .9rem; color: var(--muted); }
+.settings input { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; background: var(--paper); color: var(--ink); }
+.saved { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); }
+
+/* Toast + burst */
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 140%); background: var(--ink); color: var(--paper); border-radius: 14px; padding: 12px 18px; display: flex; gap: 12px; align-items: center; max-width: min(92vw, 460px); transition: transform .4s cubic-bezier(.2,1.3,.4,1); z-index: 50; }
+.toast.show { transform: translate(-50%, 0); }
+.toast svg { width: 40px; height: 52px; flex: none; }
+.toast b { font-family: var(--font-display); font-weight: 400; display: block; }
+.burst { position: fixed; inset: 0; pointer-events: none; z-index: 40; }
+
+@media (max-width: 860px) {
+  .today { grid-template-columns: minmax(0, 1fr); }
+  .weeks { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .opts { grid-template-columns: minmax(0,1fr); }
+  .packet-inner { min-height: 470px; }
+  .farm-cap { font-size: .68rem; left: 8px; bottom: 6px; padding: 2px 8px; }
+  .days li button { grid-template-columns: 62px minmax(0,1fr) auto; padding-inline: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .packet-inner, .toast, .bar i { transition: none; }
+  .farm .unlocked { animation: none; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="intro">
+      <span class="eyebrow" id="bookLine">Principles of Management · 8-week planting season</span>
+      <h1>Harvest Ledger</h1>
+      <p>Daily seed-packet flash cards from your textbook. Finish a week and something new gets built on your farm.</p>
+    </div>
+    <div class="settings">
+      <label for="startDate">Season started</label>
+      <input type="date" id="startDate">
+      <span class="saved" id="savedState">Saved on this device</span>
+    </div>
+  </header>
+
+  <div class="farm" id="farm" aria-label="Your farm. New buildings appear as you complete weeks."></div>
+
+  <div class="stats" id="stats"></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-today" aria-selected="true" data-tab="today">Today</button>
+    <button role="tab" id="tab-calendar" aria-selected="false" data-tab="calendar">Planting calendar</button>
+    <button role="tab" id="tab-ribbons" aria-selected="false" data-tab="ribbons">Ribbons</button>
+  </nav>
+
+  <section class="panel" id="panel-today"></section>
+  <section class="panel" id="panel-calendar" hidden></section>
+  <section class="panel" id="panel-ribbons" hidden></section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas class="burst" id="burst"></canvas>
+
+<script id="course-data" type="application/json">{"book": "Principles of Management (LibreTexts)", "weeks": [{"title": "Breaking Ground", "chapters": "Ch 1–2", "build": "Red Barn", "days": [{"title": "What managers do", "chapter": "Ch 1", "sections": ["1.1", "1.5"], "cards": [{"id": "W1D1-1", "section": "1.1", "term": "Management", "definition": "The art of getting things done through the efforts of other people. A manager's main challenge is solving problems creatively.", "farm": "The farm manager doesn't milk every cow. They make sure the milking gets done, and done well.", "art": "barn"}, {"id": "W1D1-2", "section": "1.5", "term": "P-O-L-C framework", "definition": "The four management functions: planning, organizing, leading and controlling. Credited to Henri Fayol, and tightly linked in daily practice.", "farm": "Plan the crop, organize the crew, lead them through harvest, then check yield against target.", "art": "almanac"}, {"id": "W1D1-3", "section": "1.5", "term": "Strategic, tactical, operational planning", "definition": "Strategic planning is long-range (3+ years) and organization-wide. Tactical planning (1–3 years) turns it into concrete means. Operational planning (under a year) sets the action steps.", "farm": "Strategic: go organic in five years. Tactical: convert the north fields over two seasons. Operational: spread compost on Tuesday.", "art": "almanac"}, {"id": "W1D1-4", "section": "1.5", "term": "Controlling", "definition": "Keeping performance on standard in three steps: set performance standards, compare actual performance against them, and take corrective action when needed.", "farm": "Target 170 bushels an acre, measure 140, then fix the irrigation.", "art": "chart"}]}, {"title": "Managers, roles and the triple bottom line", "chapter": "Ch 1", "sections": ["1.3", "1.6", "1.7"], "cards": [{"id": "W1D2-1", "section": "1.3", "term": "Line vs. staff manager", "definition": "A line manager runs a function that directly makes the product or service. A staff manager runs a supporting function such as finance or accounting.", "farm": "The harvest boss is line. The person keeping the farm's books is staff.", "art": "hands"}, {"id": "W1D2-2", "section": "1.3", "term": "Mintzberg's 10 managerial roles", "definition": "Interpersonal (figurehead, leader, liaison), informational (monitor, disseminator, spokesperson) and decisional (entrepreneur, disturbance handler, resource allocator, negotiator).", "farm": "In one morning the farmer greets the county inspector, reads grain prices, and haggles with the seed dealer.", "art": "vane"}, {"id": "W1D2-3", "section": "1.6", "term": "Triple bottom line", "definition": "Measuring business performance on social, environmental and economic results: people, planet, profit.", "farm": "A good year means fair wages for the crew, healthy soil, and money left over.", "art": "scale"}, {"id": "W1D2-4", "section": "1.7", "term": "Organizational citizenship behaviors (OCBs)", "definition": "Voluntary extra-role behaviors that help the organization but aren't formally rewarded, such as helping, sportsmanship and civic virtue.", "farm": "The hand who stays late to chase loose calves back in, unasked.", "art": "cow"}]}, {"title": "Personality at work", "chapter": "Ch 2", "sections": ["2.3"], "cards": [{"id": "W1D3-1", "section": "2.3", "term": "Big Five personality traits (OCEAN)", "definition": "Openness, conscientiousness, extraversion, agreeableness and neuroticism: five dimensions that explain much of how personalities differ.", "farm": "Every new seasonal picker brings a different mix of the five.", "art": "hands"}, {"id": "W1D3-2", "section": "2.3", "term": "Conscientiousness", "definition": "Being organized, systematic, punctual, achievement-oriented and dependable. The one trait that predicts job performance across all occupations.", "farm": "The worker who checks every water trough twice, every day.", "art": "water"}, {"id": "W1D3-3", "section": "2.3", "term": "Proactive personality", "definition": "An inclination to fix what's wrong, change things and take initiative rather than wait to be told.", "farm": "Spots a sagging fence post and resets it before the cattle find the gap.", "art": "fence"}, {"id": "W1D3-4", "section": "2.3", "term": "Self-efficacy", "definition": "Belief that you can perform a specific task successfully. Unlike broad traits it is task-specific, and it predicts performance.", "farm": "Confident on the tractor, nervous with a chainsaw: self-efficacy is per task.", "art": "tractor"}]}, {"title": "Perception and attitudes", "chapter": "Ch 2", "sections": ["2.4", "2.5", "2.6"], "cards": [{"id": "W1D4-1", "section": "2.4", "term": "Self-fulfilling prophecy", "definition": "When a stereotype leads you to act in a certain way, the other person responds in a way that confirms the stereotype.", "farm": "Treat the new hand as useless, give them only grunt work, and they never learn to drive the combine.", "art": "scarecrow"}, {"id": "W1D4-2", "section": "2.5", "term": "Organizational justice", "definition": "Perceived fairness at work: procedural (fair processes), distributive (fair rewards) and interactional (being treated with dignity).", "farm": "Bonus rules everyone can see, split fairly, explained respectfully.", "art": "scale"}, {"id": "W1D4-3", "section": "2.5", "term": "Psychological contract", "definition": "The unspoken understanding of what an employee will give the organization and what they'll get back.", "farm": "Work the long harvest weeks, and in return get a quiet winter and the farm's goodwill.", "art": "basket"}, {"id": "W1D4-4", "section": "2.6", "term": "Person-organization vs. person-job fit", "definition": "P-O fit is how well your values and goals match the organization's. P-J fit is how well your skills (KSAOs) match the job's demands.", "farm": "A great mechanic (job fit) who hates early mornings may never fit a dairy (organization fit).", "art": "barn"}]}, {"title": "Bringing in the sheaves: Ch 1–2", "chapter": "Ch 1–2", "sections": ["1.4", "1.6", "2.5", "2.7"], "cards": [{"id": "W1D5-1", "section": "1.4", "term": "Entrepreneurship", "definition": "Recognizing opportunities (needs, wants, problems) and using or creating resources to launch innovative, well-planned ventures.", "farm": "Seeing city demand for microgreens and turning a spare shed into a grow room.", "art": "seedling"}, {"id": "W1D5-2", "section": "1.6", "term": "Corporate social responsibility (CSR)", "definition": "Taking responsibility for your impact on customers, suppliers, employees, shareholders, communities and the environment, beyond what the law requires.", "farm": "Leaving a buffer strip along the creek even though no rule demands it.", "art": "rain"}, {"id": "W1D5-3", "section": "2.5", "term": "Job satisfaction", "definition": "The feelings people have toward their job; probably the most studied and most important work attitude.", "farm": "The milker who loves the calm of the 5am barn.", "art": "cow"}, {"id": "W1D5-4", "section": "2.7", "term": "Absenteeism and turnover", "definition": "Absenteeism is unscheduled absence; turnover is an employee leaving the organization. Both are costly.", "farm": "Losing two trained pickers mid-harvest costs more than their wages.", "art": "basket"}]}]}, {"title": "Reading the Old Almanac", "chapters": "Ch 3–4", "build": "Hen Yard", "days": [{"title": "Classical roots of management", "chapter": "Ch 3", "sections": ["3.3"], "cards": [{"id": "W2D1-1", "section": "3.3", "term": "Scientific management", "definition": "Frederick Taylor's approach: study work scientifically (time-and-motion studies) to find the one best way to do each task.", "farm": "Timing three ways to pick strawberries and teaching everyone the fastest one.", "art": "gear"}, {"id": "W2D1-2", "section": "3.3", "term": "Administrative principles (Fayol)", "definition": "Henri Fayol's focus on the whole organization and the functions of management, with principles like unity of command, division of work and scalar chain.", "farm": "Each picker answers to one row boss, so orders never clash.", "art": "almanac"}, {"id": "W2D1-3", "section": "3.3", "term": "Bureaucracy (Weber)", "definition": "Max Weber's ideal organization: clear division of labour, hierarchy, written rules, and hiring and promotion by merit.", "farm": "A big grain co-op grades every farmer's wheat by the same written standard.", "art": "silo"}, {"id": "W2D1-4", "section": "3.3", "term": "Hawthorne studies", "definition": "Western Electric studies showing that social factors and management attention affect productivity. They launched the human relations movement.", "farm": "Milkers worked harder when the owner showed interest in them, not because of the new lights.", "art": "cow"}]}, {"title": "Modern views and global trends", "chapter": "Ch 3", "sections": ["3.3", "3.5"], "cards": [{"id": "W2D2-1", "section": "3.3", "term": "Theory X and Theory Y", "definition": "McGregor's two sets of assumptions. Theory X: workers dislike work and must be controlled. Theory Y: workers seek responsibility and direct themselves.", "farm": "A Theory Y farmer lets the crew design next year's crop rotation.", "art": "hands"}, {"id": "W2D2-2", "section": "3.3", "term": "Contingency theory", "definition": "There is no one best way to manage. The right approach depends on the situation: environment, technology, size.", "farm": "Irrigation plans for a desert vineyard and a rainy dairy pasture can't be the same.", "art": "rain"}, {"id": "W2D2-3", "section": "3.3", "term": "Systems theory", "definition": "The organization is an open system of related parts that takes inputs from its environment, transforms them, and produces outputs.", "farm": "Seed, water and labour go in; crops come out; soil health feeds back into next season.", "art": "wheat"}, {"id": "W2D2-4", "section": "3.5", "term": "Outsourcing and offshoring", "definition": "Outsourcing contracts work to another company. Offshoring moves work to another country, inside the firm or through a foreign provider.", "farm": "Hiring a custom harvester instead of buying a combine is outsourcing.", "art": "tractor"}]}, {"title": "Mission, vision and values", "chapter": "Ch 4", "sections": ["4.3", "4.5"], "cards": [{"id": "W2D3-1", "section": "4.3", "term": "Mission", "definition": "An organization's basic reason to exist: what it does, for whom, and how. It describes purpose in the present.", "farm": "\"Pasture-raised beef for families in our valley.\"", "art": "barn"}, {"id": "W2D3-2", "section": "4.3", "term": "Vision", "definition": "A future-facing statement of what the organization hopes to become. It should inspire and give direction.", "farm": "\"In ten years, every school lunch in the county uses our produce.\"", "art": "sun"}, {"id": "W2D3-3", "section": "4.3", "term": "Big hairy audacious goal (BHAG)", "definition": "Collins and Porras's term for a bold, long-term goal that energizes and focuses an organization.", "farm": "Becoming the first carbon-negative dairy in the state.", "art": "apple"}, {"id": "W2D3-4", "section": "4.5", "term": "Four types of creativity", "definition": "Imitation, variation, combination and transformation: increasingly novel ways to generate ideas.", "farm": "Copy a neighbour's farm stand, tweak it, add a pick-your-own patch, then reinvent it as a farm-stay.", "art": "seedling"}]}, {"title": "Stakeholders", "chapter": "Ch 4", "sections": ["4.6"], "cards": [{"id": "W2D4-1", "section": "4.6", "term": "Stakeholders", "definition": "Individuals or groups who affect or are affected by the organization: employees, customers, suppliers, investors, communities.", "farm": "Neighbours downstream of your runoff are stakeholders too.", "art": "hands"}, {"id": "W2D4-2", "section": "4.6", "term": "Stakeholder analysis", "definition": "Identifying stakeholders and assessing their interests and influence so their expectations shape mission, vision and strategy.", "farm": "Mapping who cares about your new hog barn: buyers, neighbours, the water board.", "art": "pig"}, {"id": "W2D4-3", "section": "4.6", "term": "Stakeholder power, legitimacy, urgency", "definition": "Three attributes for judging how much a stakeholder matters: ability to influence the firm, how appropriate their claim is, and how time-sensitive it is.", "farm": "The county regulator has power and legitimacy; a flood warning adds urgency.", "art": "vane"}, {"id": "W2D4-4", "section": "4.6", "term": "Primary vs. secondary stakeholders", "definition": "Primary stakeholders have a direct stake (employees, customers, owners). Secondary ones are indirectly affected (media, activists).", "farm": "Your grain buyer is primary; the local paper covering farm runoff is secondary.", "art": "market"}]}, {"title": "Bringing in the sheaves: Ch 3–4", "chapter": "Ch 3–4", "sections": ["3.6", "4.3", "4.7"], "cards": [{"id": "W2D5-1", "section": "3.6", "term": "Hofstede's cultural dimensions", "definition": "Ways national cultures differ: individualism/collectivism, power distance, uncertainty avoidance, masculinity/femininity, long-term orientation.", "farm": "In a collective village, the co-op decides together when to start harvest.", "art": "hands"}, {"id": "W2D5-2", "section": "3.6", "term": "Power distance", "definition": "How much a society accepts that power is unequally distributed in institutions and organizations.", "farm": "On some estates nobody questions the owner; on others the crew argues every call.", "art": "scale"}, {"id": "W2D5-3", "section": "4.3", "term": "Organizational values", "definition": "Shared principles and beliefs that guide behavior and decisions, often stated next to mission and vision.", "farm": "\"We never leave a gate open\" is a value everyone lives by.", "art": "fence"}, {"id": "W2D5-4", "section": "4.7", "term": "Crafting mission and vision statements", "definition": "Good statements are short, clear, memorable and inspiring, built with stakeholder input and shared across the organization.", "farm": "Short enough to paint on the side of the barn.", "art": "barn"}]}]}, {"title": "Planning the Planting", "chapters": "Ch 5–6", "build": "Tractor", "days": [{"title": "How strategies emerge", "chapter": "Ch 5", "sections": ["5.3", "5.4"], "cards": [{"id": "W3D1-1", "section": "5.3", "term": "Strategy formulation vs. implementation", "definition": "Formulation is choosing the strategy. Implementation is the actions and resources that put it into practice.", "farm": "Deciding to sell direct to restaurants vs. actually building the delivery route.", "art": "tractor"}, {"id": "W3D1-2", "section": "5.4", "term": "Intended strategy", "definition": "The strategy leaders plan and deliberately set out to pursue.", "farm": "The winter plan: 200 acres of corn.", "art": "almanac"}, {"id": "W3D1-3", "section": "5.4", "term": "Emergent strategy", "definition": "A strategy that arises unplanned, from a pattern of responses to unexpected opportunities and threats (Mintzberg).", "farm": "Drought kills the corn, sunflowers thrive, and you quietly become a sunflower farm.", "art": "sun"}, {"id": "W3D1-4", "section": "5.4", "term": "Realized strategy", "definition": "The strategy actually followed: the parts of the intended strategy that happened plus the emergent strategy.", "farm": "Half corn as planned, half sunflowers by accident: that's what you really did.", "art": "wheat"}]}, {"title": "Looking inside: resources and the value chain", "chapter": "Ch 5", "sections": ["5.5", "5.6"], "cards": [{"id": "W3D2-1", "section": "5.5", "term": "Strategy as trade-offs", "definition": "Porter's view that strategy means choosing what not to do. Trade-offs, discipline and focus build a unique position that's hard to copy.", "farm": "Saying no to commodity milk so you can focus on artisan cheese.", "art": "scale"}, {"id": "W3D2-2", "section": "5.5", "term": "Competitive advantage", "definition": "The ability to create more value or perform better than rivals, in a sustainable way.", "farm": "The only orchard in the region with a frost-proof heritage apple.", "art": "apple"}, {"id": "W3D2-3", "section": "5.6", "term": "VRIO/VRIS framework", "definition": "A resource gives sustained advantage if it is valuable, rare, hard to imitate, and not easily substituted.", "farm": "Rich river-bottom soil: valuable, rare, impossible to copy.", "art": "seedling"}, {"id": "W3D2-4", "section": "5.6", "term": "Value chain", "definition": "The primary and support activities through which a firm creates value. Used to find where cost or differentiation advantages come from.", "farm": "Seed, grow, harvest, pack, truck, sell, plus the books and repairs that support it all.", "art": "market"}]}, {"title": "Looking outside and the strategy diamond", "chapter": "Ch 5", "sections": ["5.7", "5.8"], "cards": [{"id": "W3D3-1", "section": "5.7", "term": "PESTEL analysis", "definition": "Examines the general environment's political, economic, social, technological, environmental and legal factors.", "farm": "Farm subsidies, interest rates, plant-based diets, drones, drought, labour law.", "art": "vane"}, {"id": "W3D3-2", "section": "5.7", "term": "Porter's five forces", "definition": "Industry analysis of rivalry, threat of new entrants, threat of substitutes, buyer power and supplier power.", "farm": "Three supermarket chains buy all the milk: buyer power squeezes the price.", "art": "market"}, {"id": "W3D3-3", "section": "5.8", "term": "Strategy diamond", "definition": "Hambrick and Fredrickson's five elements of a coherent strategy: arenas, vehicles, differentiators, staging and pacing, economic logic.", "farm": "Where we farm, how we expand, why buyers pick us, in what order, and how we make money.", "art": "almanac"}, {"id": "W3D3-4", "section": "5.8", "term": "Arenas and vehicles", "definition": "Arenas are where the firm is active (products, markets, geographies). Vehicles are how it gets there (internal growth, alliances, acquisitions).", "farm": "Arena: farmers' markets in three towns. Vehicle: partnering with a local bakery.", "art": "tractor"}]}, {"title": "Goals and objectives", "chapter": "Ch 6", "sections": ["6.3", "6.4", "6.5"], "cards": [{"id": "W3D4-1", "section": "6.3", "term": "Goals vs. objectives", "definition": "Goals are broad, longer-term outcome statements. Objectives are specific, measurable, time-bound targets that support them.", "farm": "Goal: become known for great eggs. Objective: 95% grade-A eggs by June.", "art": "chicken"}, {"id": "W3D4-2", "section": "6.3", "term": "Hierarchy of goals", "definition": "Goals cascade from mission and strategy down to units, departments and individuals so everything lines up.", "farm": "Farm goal, then dairy-barn goal, then each milker's daily target.", "art": "silo"}, {"id": "W3D4-3", "section": "6.4", "term": "Management by objectives (MBO)", "definition": "Drucker's process: managers and employees set objectives together, review progress, and reward based on results.", "farm": "The herd manager and owner agree to cut calf losses to 3% this year.", "art": "cow"}, {"id": "W3D4-4", "section": "6.5", "term": "Goal-setting theory", "definition": "Locke and Latham: specific, difficult goals with feedback lead to higher performance than vague or easy goals.", "farm": "\"Pick 40 crates by noon\" beats \"do your best\".", "art": "basket"}]}, {"title": "Bringing in the sheaves: Ch 5–6", "chapter": "Ch 5–6", "sections": ["5.7", "5.8", "6.4", "6.6"], "cards": [{"id": "W3D5-1", "section": "5.7", "term": "SWOT analysis", "definition": "A summary of internal strengths and weaknesses and external opportunities and threats.", "farm": "Strength: fertile soil. Threat: a new mega-farm in the next county.", "art": "scarecrow"}, {"id": "W3D5-2", "section": "5.8", "term": "Differentiators and economic logic", "definition": "Differentiators are how the firm wins in its arenas. Economic logic is how it earns returns, such as lowest cost or premium prices.", "farm": "Heritage pork chefs love (differentiator), sold at a premium (economic logic).", "art": "pig"}, {"id": "W3D5-3", "section": "6.4", "term": "Balanced scorecard", "definition": "Kaplan and Norton's framework measuring financial, customer, internal process, and learning and growth perspectives.", "farm": "Profit per acre, buyer happiness, harvest speed, and crew skills, side by side.", "art": "chart"}, {"id": "W3D5-4", "section": "6.6", "term": "360-degree feedback", "definition": "Appraisal using input from supervisors, peers, subordinates and sometimes customers, plus self-assessment.", "farm": "The foreman hears from the owner, the crew, and the chefs who buy the produce.", "art": "hands"}]}]}, {"title": "Raising the Barn", "chapters": "Ch 7–8", "build": "Grain Silo", "days": [{"title": "Building the structure", "chapter": "Ch 7", "sections": ["7.3"], "cards": [{"id": "W4D1-1", "section": "7.3", "term": "Organizational structure", "definition": "How an organization's activities are divided, coordinated and controlled, including who reports to whom.", "farm": "Who drives, who hauls, who runs the dryer, and who they all answer to.", "art": "barn"}, {"id": "W4D1-2", "section": "7.3", "term": "Formalization", "definition": "How far policies, procedures, job descriptions and rules are written down and spelled out.", "farm": "A laminated step-by-step milking hygiene checklist on the parlour wall.", "art": "almanac"}, {"id": "W4D1-3", "section": "7.3", "term": "Centralization", "definition": "How much decision-making authority sits at the top of the organization.", "farm": "Only the owner can decide when to start harvest: highly centralized.", "art": "vane"}, {"id": "W4D1-4", "section": "7.3", "term": "Hierarchical levels and span of control", "definition": "How many layers the structure has (tall vs. flat) and how many people report to one manager.", "farm": "One supervisor can handle 20 experienced pickers but only five new tractor drivers.", "art": "hands"}]}, {"title": "Shapes of organizations", "chapter": "Ch 7", "sections": ["7.3", "7.4"], "cards": [{"id": "W4D2-1", "section": "7.3", "term": "Mechanistic vs. organic structures", "definition": "Mechanistic: bureaucratic, centralized, formalized. Organic: flexible, decentralized, suited to changing environments.", "farm": "A big poultry plant vs. a start-up vertical farm.", "art": "gear"}, {"id": "W4D2-2", "section": "7.3", "term": "Functional vs. divisional structure", "definition": "Functional groups people by function (marketing, finance, operations). Divisional sets up self-contained units by product, customer or region.", "farm": "One farm with a crops team and a sales team, vs. separate dairy and orchard divisions.", "art": "silo"}, {"id": "W4D2-3", "section": "7.4", "term": "Matrix structure", "definition": "Combines functional and product or project lines so employees report to two managers.", "farm": "An agronomist reports to the crops manager and the new organic-conversion project lead.", "art": "fence"}, {"id": "W4D2-4", "section": "7.4", "term": "Boundaryless organization", "definition": "A structure that removes barriers between departments and with outside partners, often using temporary teams and networks.", "farm": "Neighbouring farms share one combine crew and swap labour at harvest.", "art": "tractor"}]}, {"title": "Managing change", "chapter": "Ch 7", "sections": ["7.5", "7.6"], "cards": [{"id": "W4D3-1", "section": "7.5", "term": "Resistance to change", "definition": "Reluctance to support change, from disrupted habits, personality, uncertainty, fear of failure or personal impact.", "farm": "\"We've always cut hay in June\" when switching to a new rotation.", "art": "scarecrow"}, {"id": "W4D3-2", "section": "7.6", "term": "Lewin's three-stage model", "definition": "Unfreeze current behaviors, change to new ones, then refreeze so the new behaviors stick.", "farm": "Show the crew why no-till matters, switch the drills, then make no-till the standard.", "art": "rain"}, {"id": "W4D3-3", "section": "7.6", "term": "Force field analysis", "definition": "Lewin's tool listing the forces driving change and the forces resisting it, so managers can strengthen one and weaken the other.", "farm": "Drivers: soil savings, subsidies. Resisters: old equipment, habit.", "art": "scale"}, {"id": "W4D3-4", "section": "7.6", "term": "Change agent", "definition": "The person who starts and manages a change effort, from inside or outside the organization.", "farm": "The young farmer back from ag college pushing for precision irrigation.", "art": "seedling"}]}, {"title": "Organizational culture", "chapter": "Ch 8", "sections": ["8.3", "8.4"], "cards": [{"id": "W4D4-1", "section": "8.3", "term": "Organizational culture", "definition": "Shared assumptions, values and beliefs that show people what behavior is appropriate in the organization.", "farm": "Nobody wrote it down, but everyone knows you help a neighbour bring in hay before rain.", "art": "barn"}, {"id": "W4D4-2", "section": "8.3", "term": "Levels of culture", "definition": "Schein's three layers: deep assumptions, espoused values and visible artifacts.", "farm": "The stewardship belief underneath, the \"care for the land\" motto, the old tractor kept polished by the gate.", "art": "apple"}, {"id": "W4D4-3", "section": "8.4", "term": "Strong culture", "definition": "Values that are widely shared and intensely held. A strong culture guides behavior and can help performance or block change.", "farm": "A family farm where every generation lives the same stewardship ethic.", "art": "house"}, {"id": "W4D4-4", "section": "8.4", "term": "Subcultures and countercultures", "definition": "Subcultures share values within a subgroup. Countercultures hold values that directly oppose the dominant culture.", "farm": "The night-calving crew has its own rhythms; the crew that skips biosecurity rules is a counterculture.", "art": "cow"}]}, {"title": "Bringing in the sheaves: Ch 7–8", "chapter": "Ch 7–8", "sections": ["7.3", "8.5"], "cards": [{"id": "W4D5-1", "section": "7.3", "term": "Departmentalization", "definition": "Grouping jobs into departments by function, product, geography or customer.", "farm": "Crops, livestock and the farm shop, each its own department.", "art": "market"}, {"id": "W4D5-2", "section": "8.5", "term": "Attraction-selection-attrition (ASA)", "definition": "Culture persists because people who fit are attracted, selected and retained, while poor fits leave.", "farm": "People who love early mornings apply to the dairy, and the night owls drift away.", "art": "sun"}, {"id": "W4D5-3", "section": "8.5", "term": "Onboarding (organizational socialization)", "definition": "How new employees learn the attitudes, knowledge, skills and behaviors needed to function in the organization.", "farm": "Day one: the safety walk around the bull pen and the harvest-supper tradition.", "art": "hands"}, {"id": "W4D5-4", "section": "8.5", "term": "Rituals, stories and symbols", "definition": "Cultural carriers that transmit values: ceremonies, legendary stories, logos, physical layout.", "farm": "The story of grandpa saving the herd in the '78 blizzard, told every winter.", "art": "almanac"}]}]}, {"title": "Neighbours and Foremen", "chapters": "Ch 9–10", "build": "Dairy Herd", "days": [{"title": "The language of networks", "chapter": "Ch 9", "sections": ["9.3"], "cards": [{"id": "W5D1-1", "section": "9.3", "term": "Social network analysis (SNA)", "definition": "Mapping and measuring relationships and flows among people or groups to see how work and information really move.", "farm": "Drawing who calls whom when a cow gets sick reveals the real chain of help.", "art": "vane"}, {"id": "W5D1-2", "section": "9.3", "term": "Nodes and ties", "definition": "Nodes are the people or units in a network. Ties are the relationships linking them.", "farm": "Farms are nodes; shared equipment and phone calls are ties.", "art": "fence"}, {"id": "W5D1-3", "section": "9.3", "term": "Centrality", "definition": "How connected a person is, or how central they are to information flows in a network.", "farm": "The feed-store owner who knows every farmer in the county.", "art": "market"}, {"id": "W5D1-4", "section": "9.3", "term": "Strong vs. weak ties", "definition": "Strong ties are close, frequent relationships. Weak ties are casual acquaintances, and they often bring new information.", "farm": "Your brother helps every harvest (strong); a fair acquaintance tells you about a new grain buyer (weak).", "art": "hands"}]}, {"title": "Bridges and social capital", "chapter": "Ch 9", "sections": ["9.3", "9.4", "9.6"], "cards": [{"id": "W5D2-1", "section": "9.3", "term": "Structural holes", "definition": "Gaps between unconnected groups in a network. Whoever bridges them gains information and control.", "farm": "The organic growers and the restaurant owners don't know each other yet.", "art": "fence"}, {"id": "W5D2-2", "section": "9.3", "term": "Brokers (bridges)", "definition": "People who connect groups that otherwise aren't connected and control the information flowing between them.", "farm": "The farmers' market manager who introduces growers to chefs.", "art": "market"}, {"id": "W5D2-3", "section": "9.4", "term": "Social capital", "definition": "The value a person or organization gets from its network of relationships.", "farm": "When your barn burns, twenty neighbours show up with hammers.", "art": "barn"}, {"id": "W5D2-4", "section": "9.6", "term": "Personal, operational, strategic networks", "definition": "Personal: contacts outside work for development. Operational: people needed to get today's work done. Strategic: relationships that help with future priorities.", "farm": "Ag-college friends, your vet and mechanic, and the co-op board you want to join.", "art": "hands"}]}, {"title": "Who leads? Traits and behaviors", "chapter": "Ch 10", "sections": ["10.3", "10.4"], "cards": [{"id": "W5D3-1", "section": "10.3", "term": "Trait approaches to leadership", "definition": "Studying characteristics like intelligence, Big Five traits, self-esteem and integrity that relate to who emerges as leader and who leads well.", "farm": "The crew naturally follows the calm, honest one when the storm hits.", "art": "sun"}, {"id": "W5D3-2", "section": "10.4", "term": "Task-oriented (initiating structure)", "definition": "Leader behaviors that structure work: setting goals, clarifying expectations, monitoring performance.", "farm": "\"North field by 3pm, two trucks, check moisture every load.\"", "art": "chart"}, {"id": "W5D3-3", "section": "10.4", "term": "People-oriented (consideration)", "definition": "Leader behaviors showing concern for employees' feelings and well-being and treating them with respect.", "farm": "The foreman who brings cold drinks and asks about your sick kid.", "art": "hands"}, {"id": "W5D3-4", "section": "10.4", "term": "Authoritarian, democratic, laissez-faire", "definition": "Decision styles: deciding alone, involving employees, or leaving decisions to employees.", "farm": "Owner decides, crew votes, or \"you figure it out\".", "art": "scale"}]}, {"title": "Leadership depends on the field", "chapter": "Ch 10", "sections": ["10.5", "10.6"], "cards": [{"id": "W5D4-1", "section": "10.5", "term": "Fiedler's contingency theory", "definition": "Leader effectiveness depends on matching style (measured by LPC) to how favorable the situation is: leader-member relations, task structure, position power.", "farm": "A task-driven boss shines in a harvest emergency; a relationship-builder shines in a slow season.", "art": "rain"}, {"id": "W5D4-2", "section": "10.5", "term": "Situational leadership theory", "definition": "Hersey and Blanchard: leaders adapt their style (telling, selling, participating, delegating) to followers' readiness.", "farm": "Tell the new hand exactly how to hitch the trailer; delegate to the 20-year veteran.", "art": "tractor"}, {"id": "W5D4-3", "section": "10.5", "term": "Path-goal theory", "definition": "Leaders clarify the path to goals using directive, supportive, participative or achievement-oriented behavior suited to the employee and setting.", "farm": "Clearing the muddy lane so the trucks can actually reach the field.", "art": "fence"}, {"id": "W5D4-4", "section": "10.6", "term": "Transformational leadership", "definition": "Inspiring followers to exceed expectations through charisma, inspirational motivation, intellectual stimulation and individualized consideration.", "farm": "The farmer whose vision of a regenerative valley gets the whole crew excited.", "art": "sun"}]}, {"title": "Bringing in the sheaves: Ch 9–10", "chapter": "Ch 9–10", "sections": ["9.3", "10.6"], "cards": [{"id": "W5D5-1", "section": "9.3", "term": "Small-world (six degrees)", "definition": "Most people are linked to anyone else through a short chain of acquaintances.", "farm": "Your vet's cousin knows the buyer at the big grocery chain.", "art": "vane"}, {"id": "W5D5-2", "section": "10.6", "term": "Transactional leadership", "definition": "Leadership based on exchanges, using contingent rewards and management by exception.", "farm": "Bonus per crate picked, and the boss only steps in when something goes wrong.", "art": "basket"}, {"id": "W5D5-3", "section": "10.6", "term": "Leader-member exchange (LMX)", "definition": "Leaders form relationships of different quality with each follower. High-quality exchanges bring trust, support and better results.", "farm": "The foreman's trusted inner circle gets the best fields and the most coaching.", "art": "hands"}, {"id": "W5D5-4", "section": "10.6", "term": "Servant leadership", "definition": "Leaders who put employees' needs first, help them grow and succeed, and act ethically.", "farm": "The owner who mucks stalls alongside the crew and pays for their certifications.", "art": "barn"}]}]}, {"title": "Weather Calls and Fence Talk", "chapters": "Ch 11–12", "build": "Beehives", "days": [{"title": "How decisions get made", "chapter": "Ch 11", "sections": ["11.3"], "cards": [{"id": "W6D1-1", "section": "11.3", "term": "Programmed vs. nonprogrammed decisions", "definition": "Programmed decisions are routine and handled by rules. Nonprogrammed decisions are new and unstructured.", "farm": "\"Reorder diesel at 25%\" vs. responding to a brand-new livestock disease.", "art": "water"}, {"id": "W6D1-2", "section": "11.3", "term": "Rational decision-making model", "definition": "Identify the problem, set and weight criteria, generate and evaluate alternatives, choose the best, implement, evaluate.", "farm": "Choosing a new tractor: price, horsepower, dealer support, scored and compared.", "art": "tractor"}, {"id": "W6D1-3", "section": "11.3", "term": "Bounded rationality", "definition": "Decision makers are limited by time, information and mental capacity, so they can't be fully rational.", "farm": "Nobody knows next year's rainfall, so you plant on your best guess.", "art": "rain"}, {"id": "W6D1-4", "section": "11.3", "term": "Satisficing", "definition": "Accepting the first option that meets minimum criteria instead of hunting for the best one.", "farm": "Buying the first decent used baler at a fair price instead of checking every auction in the state.", "art": "wheat"}]}, {"title": "When decisions go wrong", "chapter": "Ch 11", "sections": ["11.4"], "cards": [{"id": "W6D2-1", "section": "11.4", "term": "Overconfidence bias", "definition": "Overestimating how accurate your judgments and abilities are.", "farm": "\"I can get all 300 acres in before the rain.\" You can't.", "art": "rain"}, {"id": "W6D2-2", "section": "11.4", "term": "Anchoring", "definition": "Leaning too heavily on the first piece of information you get when making a judgment.", "farm": "The first bid for your calves sets the bar for every offer after.", "art": "cow"}, {"id": "W6D2-3", "section": "11.4", "term": "Framing bias", "definition": "Being swayed by how information is presented, such as gains vs. losses.", "farm": "\"90% germination\" sounds better than \"10% of seeds fail\".", "art": "seedling"}, {"id": "W6D2-4", "section": "11.4", "term": "Escalation of commitment", "definition": "Continuing to invest in a failing course of action because of what you've already put in.", "farm": "Replanting a failed crop for the third season because \"we've sunk so much in\".", "art": "scarecrow"}]}, {"title": "Deciding as a group", "chapter": "Ch 11", "sections": ["11.3", "11.5"], "cards": [{"id": "W6D3-1", "section": "11.5", "term": "Groupthink", "definition": "A group avoids critically evaluating ideas to keep the peace and consensus, which leads to poor decisions.", "farm": "Nobody says the new hog barn is in the flood plain because everyone's excited.", "art": "pig"}, {"id": "W6D3-2", "section": "11.5", "term": "Nominal group technique", "definition": "Members generate ideas alone, share them in turn, discuss, then vote privately to reduce pressure to conform.", "farm": "Each crew member writes their idea for fixing the bottleneck before anyone talks.", "art": "almanac"}, {"id": "W6D3-3", "section": "11.5", "term": "Delphi technique", "definition": "Experts give anonymous written input over several rounds, with feedback, until they reach consensus.", "farm": "Agronomists email anonymous yield forecasts until the numbers converge.", "art": "chart"}, {"id": "W6D3-4", "section": "11.3", "term": "Intuitive decision making", "definition": "Reaching decisions quickly by recognizing patterns from experience rather than by conscious analysis.", "farm": "An old farmer smells rain coming and moves the hay in.", "art": "vane"}]}, {"title": "How messages travel", "chapter": "Ch 12", "sections": ["12.3", "12.4"], "cards": [{"id": "W6D4-1", "section": "12.3", "term": "Communication process model", "definition": "A sender encodes a message and sends it through a channel. The receiver decodes it and gives feedback. Noise can distort it.", "farm": "You shout \"gate!\" across the yard; the hand hears \"wait!\" over the tractor.", "art": "vane"}, {"id": "W6D4-2", "section": "12.3", "term": "Noise", "definition": "Anything that interferes with or distorts a message between sender and receiver.", "farm": "A roaring grain dryer next to the person giving instructions.", "art": "gear"}, {"id": "W6D4-3", "section": "12.4", "term": "Filtering", "definition": "Distorting or holding back information to manage how someone will react.", "farm": "Telling the owner the harvest is \"going fine\" while skipping the broken auger.", "art": "silo"}, {"id": "W6D4-4", "section": "12.4", "term": "Information overload", "definition": "Receiving more information than you can process, so messages get missed or misunderstood.", "farm": "Forty texts about weather, prices and parts before 7am.", "art": "almanac"}]}, {"title": "Bringing in the sheaves: Ch 11–12", "chapter": "Ch 11–12", "sections": ["11.5", "12.4", "12.6", "12.7"], "cards": [{"id": "W6D5-1", "section": "11.5", "term": "Brainstorming", "definition": "A group generates as many ideas as possible without criticism, building on each other's.", "farm": "Twenty ideas for the empty barn, from goat yoga to a cider press.", "art": "barn"}, {"id": "W6D5-2", "section": "12.4", "term": "Grapevine (workplace gossip)", "definition": "The informal channel through which rumors and unofficial information spread.", "farm": "Everyone knew about the sale of the north farm before the owner said a word.", "art": "hands"}, {"id": "W6D5-3", "section": "12.6", "term": "Channel richness", "definition": "How much information a channel can carry. Face-to-face is richest; impersonal written messages are leanest.", "farm": "Tell a worker they're being let go face to face, not on a note in the tool shed.", "art": "house"}, {"id": "W6D5-4", "section": "12.7", "term": "Active listening", "definition": "Listening with attention, paraphrasing, asking questions and responding to show you understand.", "farm": "\"So the heifers are off feed since Tuesday? What changed?\"", "art": "cow"}]}]}, {"title": "Harvest Crew Spirit", "chapters": "Ch 13–14", "build": "Apple Orchard", "days": [{"title": "How groups grow", "chapter": "Ch 13", "sections": ["13.3"], "cards": [{"id": "W7D1-1", "section": "13.3", "term": "Tuckman's stages of development", "definition": "Groups move through forming, storming, norming, performing and adjourning.", "farm": "The seasonal crew squabbles in week one, finds its rhythm by week three, and parties at the end.", "art": "hands"}, {"id": "W7D1-2", "section": "13.3", "term": "Punctuated equilibrium", "definition": "Groups alternate between long stretches of inertia and bursts of change, often around a project's midpoint.", "farm": "The crew coasts until mid-season, then suddenly reorganizes the whole picking system.", "art": "apple"}, {"id": "W7D1-3", "section": "13.3", "term": "Group cohesion", "definition": "How attracted members are to the group and how motivated they are to stay in it.", "farm": "The crew that eats lunch together under the same oak every day.", "art": "apple"}, {"id": "W7D1-4", "section": "13.3", "term": "Team norms", "definition": "Shared expectations about how members should behave.", "farm": "On this crew, nobody leaves until the last crate is loaded.", "art": "basket"}]}, {"title": "Designing teams", "chapter": "Ch 13", "sections": ["13.4", "13.5"], "cards": [{"id": "W7D2-1", "section": "13.4", "term": "Task interdependence", "definition": "How much members depend on each other: pooled, sequential or reciprocal.", "farm": "Pooled: pickers in separate rows. Sequential: picker, packer, trucker. Reciprocal: combine and grain cart working together.", "art": "tractor"}, {"id": "W7D2-2", "section": "13.4", "term": "Task roles vs. social roles", "definition": "Task roles help the team get work done. Social (maintenance) roles keep relationships healthy.", "farm": "One person keeps the tally; another keeps everyone laughing in the heat.", "art": "sun"}, {"id": "W7D2-3", "section": "13.5", "term": "Self-managed teams", "definition": "Teams with no formal supervisor that plan and control their own work.", "farm": "The orchard crew sets its own schedule and divides the blocks.", "art": "apple"}, {"id": "W7D2-4", "section": "13.5", "term": "Cross-functional teams", "definition": "Teams with members from different functions working toward one goal.", "farm": "Agronomist, mechanic and marketer planning the new pumpkin patch together.", "art": "market"}]}, {"title": "What holds teams back", "chapter": "Ch 13", "sections": ["13.4", "13.6"], "cards": [{"id": "W7D3-1", "section": "13.6", "term": "Social loafing", "definition": "Putting in less effort when working in a group than when working alone.", "farm": "Six people \"moving\" hay bales while two do all the lifting.", "art": "wheat"}, {"id": "W7D3-2", "section": "13.6", "term": "Lack of trust", "definition": "A barrier to team effectiveness. Without trust, members hold back information and effort.", "farm": "Pickers hide the good rows from each other when they don't trust the bonus split.", "art": "fence"}, {"id": "W7D3-3", "section": "13.6", "term": "Collective efficacy", "definition": "A team's shared belief that it can successfully accomplish its tasks.", "farm": "\"We brought in 400 acres last year. We can do this.\"", "art": "basket"}, {"id": "W7D3-4", "section": "13.4", "term": "Virtual teams", "definition": "Teams whose members are spread out and work together mainly through technology.", "farm": "Farmers in three states sharing data on a drought-resistant seed trial.", "art": "chart"}]}, {"title": "What drives people: needs", "chapter": "Ch 14", "sections": ["14.3"], "cards": [{"id": "W7D4-1", "section": "14.3", "term": "Maslow's hierarchy of needs", "definition": "Physiological, safety, social, esteem, self-actualization. Lower needs must be met before higher ones motivate.", "farm": "Fair wages and housing come before pride in a prize-winning crop.", "art": "barn"}, {"id": "W7D4-2", "section": "14.3", "term": "ERG theory", "definition": "Alderfer's needs of existence, relatedness and growth. Several can operate at once, and frustration can cause regression.", "farm": "A worker blocked from growing into a lead role starts caring more about pay.", "art": "seedling"}, {"id": "W7D4-3", "section": "14.3", "term": "Herzberg's two-factor theory", "definition": "Hygiene factors (pay, security, conditions) prevent dissatisfaction. Motivators (achievement, recognition, responsibility) create satisfaction.", "farm": "A new barn roof stops complaints; a blue ribbon at the fair motivates.", "art": "ribbon"}, {"id": "W7D4-4", "section": "14.3", "term": "McClelland's acquired needs", "definition": "People are driven by needs for achievement, affiliation and power, learned through life experience.", "farm": "One hand wants the top yield, another wants friends, another wants to run the crew.", "art": "hands"}]}, {"title": "Bringing in the sheaves: Ch 13–14", "chapter": "Ch 13–14", "sections": ["14.4", "14.5"], "cards": [{"id": "W7D5-1", "section": "14.4", "term": "Equity theory", "definition": "People compare their input/outcome ratio with a referent's. Feeling under- or over-rewarded pushes them to restore balance.", "farm": "A picker learns the new hire earns more for the same rows, and their effort drops.", "art": "scale"}, {"id": "W7D5-2", "section": "14.4", "term": "Expectancy theory", "definition": "Vroom: motivation depends on expectancy (effort leads to performance), instrumentality (performance leads to reward) and valence (value of the reward).", "farm": "A bonus nobody believes they can reach motivates nobody.", "art": "basket"}, {"id": "W7D5-3", "section": "14.4", "term": "Reinforcement theory", "definition": "Behavior is shaped by its consequences: positive and negative reinforcement increase it; punishment and extinction decrease it.", "farm": "Praise every time the gate gets latched, and soon it always does.", "art": "fence"}, {"id": "W7D5-4", "section": "14.5", "term": "Intrinsic vs. extrinsic motivation", "definition": "Intrinsic motivation comes from the work itself. Extrinsic motivation comes from outside rewards such as pay.", "farm": "Loving the smell of turned soil vs. working for the harvest bonus.", "art": "seedling"}]}]}, {"title": "Weighing the Harvest", "chapters": "Ch 15–16", "build": "Farmhouse and Blue Ribbon", "days": [{"title": "The essentials of control", "chapter": "Ch 15", "sections": ["15.3", "15.4"], "cards": [{"id": "W8D1-1", "section": "15.3", "term": "Control process", "definition": "Set standards, measure actual performance, compare it with the standards, and take corrective action.", "farm": "Standard: 30 litres per cow. Measure. Compare. Change the feed ration.", "art": "cow"}, {"id": "W8D1-2", "section": "15.4", "term": "Feedforward control", "definition": "Control that heads off problems before an activity starts, such as inspecting inputs.", "farm": "Testing seed germination before planting.", "art": "seedling"}, {"id": "W8D1-3", "section": "15.4", "term": "Concurrent control", "definition": "Control while an activity is in progress.", "farm": "The foreman walking the rows during harvest, checking fruit quality.", "art": "apple"}, {"id": "W8D1-4", "section": "15.4", "term": "Feedback control", "definition": "Control after an activity ends, comparing outcomes with standards.", "farm": "Reviewing yield maps after harvest to plan next year.", "art": "chart"}]}, {"title": "Levels and money", "chapter": "Ch 15", "sections": ["15.4", "15.5"], "cards": [{"id": "W8D2-1", "section": "15.4", "term": "Bureaucratic vs. clan control", "definition": "Bureaucratic control uses rules, hierarchy and procedures. Clan control relies on shared values and culture.", "farm": "A rulebook on spraying vs. a crew that just cares about clean water.", "art": "almanac"}, {"id": "W8D2-2", "section": "15.5", "term": "Budget", "definition": "A financial plan that allocates resources, used to compare actual spending and revenue against plan.", "farm": "$40,000 for fertilizer this season; check the receipts monthly.", "art": "scale"}, {"id": "W8D2-3", "section": "15.5", "term": "Financial statements", "definition": "The income statement, balance sheet and cash flow statement used to monitor financial performance.", "farm": "Profit for the season, what the farm owns and owes, and whether cash lasts until harvest pays out.", "art": "chart"}, {"id": "W8D2-4", "section": "15.5", "term": "Financial ratio analysis", "definition": "Liquidity, leverage, profitability and activity ratios used to judge financial health and compare performance.", "farm": "Can you pay this month's feed bill, and how much of the land does the bank own?", "art": "chart"}]}, {"title": "Nonfinancial and lean control", "chapter": "Ch 15", "sections": ["15.6", "15.7"], "cards": [{"id": "W8D3-1", "section": "15.6", "term": "Nonfinancial controls", "definition": "Controls based on measures like quality, customer satisfaction and employee behavior rather than money.", "farm": "Chef complaints about bruised tomatoes, tracked every week.", "art": "market"}, {"id": "W8D3-2", "section": "15.6", "term": "Six Sigma", "definition": "A quality approach aiming for near-zero defects (3.4 per million) through measurement and process improvement.", "farm": "Driving cracked eggs down toward almost none.", "art": "chicken"}, {"id": "W8D3-3", "section": "15.7", "term": "Lean production and kaizen", "definition": "Lean eliminates waste and improves every process continuously (from the Toyota Production System). Kaizen is small, constant improvement by everyone.", "farm": "Moving the wash station next to the packing shed saves 400 steps a day.", "art": "gear"}, {"id": "W8D3-4", "section": "15.7", "term": "Just-in-time (JIT)", "definition": "Inventory arrives exactly when production needs it, keeping inventory costs low.", "farm": "Feed delivered weekly instead of filling (and spoiling) a giant silo.", "art": "silo"}]}, {"title": "Strategic human resource management", "chapter": "Ch 16", "sections": ["16.3", "16.4", "16.5"], "cards": [{"id": "W8D4-1", "section": "16.3", "term": "Strategic HRM", "definition": "Aligning HR practices with strategy so that how you manage people supports competitive advantage.", "farm": "If you compete on artisan cheese, hire and train for craft, not speed.", "art": "hands"}, {"id": "W8D4-2", "section": "16.3", "term": "Human capital", "definition": "Employees' knowledge, skills, abilities and experience that create value.", "farm": "The herd manager who can spot mastitis from across the barn.", "art": "cow"}, {"id": "W8D4-3", "section": "16.4", "term": "War for talent", "definition": "Intense competition among organizations to attract and keep the best employees.", "farm": "Every farm in the valley wants the same three skilled mechanics.", "art": "tractor"}, {"id": "W8D4-4", "section": "16.5", "term": "Structured interviews", "definition": "Every applicant gets the same job-related questions and is rated on the same criteria. More valid than unstructured interviews.", "farm": "Each applicant is asked how they'd handle a calving at 2am, and scored the same way.", "art": "almanac"}]}, {"title": "Bringing in the sheaves: Ch 15–16", "chapter": "Ch 15–16", "sections": ["15.8", "16.5", "16.6", "16.7"], "cards": [{"id": "W8D5-1", "section": "15.8", "term": "Personal balanced scorecard", "definition": "Applying the balanced scorecard to yourself: goals and measures across several life and career areas.", "farm": "Your own scorecard: grades, health, skills, and time on the farm.", "art": "ribbon"}, {"id": "W8D5-2", "section": "16.5", "term": "Realistic job preview", "definition": "Giving applicants honest positive and negative information about the job, which reduces turnover.", "farm": "\"You'll love the sunrises. You'll also shovel manure in January.\"", "art": "house"}, {"id": "W8D5-3", "section": "16.6", "term": "Pay for performance", "definition": "Linking pay to individual, group or organizational results: merit pay, bonuses, gainsharing, profit sharing, stock options.", "farm": "A bonus per pound of honey for the beekeepers.", "art": "beehive"}, {"id": "W8D5-4", "section": "16.7", "term": "High-performance work system (HPWS)", "definition": "A bundle of HR practices (selective hiring, training, empowerment, performance-based pay) that together lift performance.", "farm": "Hire carefully, train well, let crews decide, share the profits: a farm that runs itself.", "art": "barn"}]}]}]}</script>
+<script>
+(function () {
+"use strict";
+const COURSE = JSON.parse(document.getElementById("course-data").textContent);
+const WEEKS = COURSE.weeks;
+const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+/* ================= Illustrations ================= */
+const ART = {
+  seedling: () => `<path d="M10 92 Q50 70 90 92 Z" fill="#6a4930"/><path d="M50 84 V48" stroke="#2e6a3e" stroke-width="5" fill="none"/><path d="M50 58 C30 58 22 44 24 34 C40 34 50 44 50 58Z" fill="#4f9a55"/><path d="M50 50 C66 50 78 38 76 26 C60 26 50 36 50 50Z" fill="#6cbf7d"/>`,
+  barn: () => `<polygon points="14,46 50,18 86,46" fill="#7e2219"/><rect x="18" y="44" width="64" height="48" fill="#b3372c"/><rect x="38" y="60" width="24" height="32" fill="#f4efe2"/><path d="M38 60 L62 92 M62 60 L38 92" stroke="#b3372c" stroke-width="3"/><rect x="44" y="30" width="12" height="10" fill="#f4efe2"/>`,
+  silo: () => `<rect x="30" y="30" width="40" height="62" fill="#c9ced1"/><path d="M30 30 Q50 6 70 30Z" fill="#8a9499"/><path d="M30 44 H70 M30 58 H70 M30 72 H70" stroke="#8a9499" stroke-width="2"/><rect x="45" y="78" width="10" height="14" fill="#6a4930"/>`,
+  tractor: () => `<rect x="18" y="50" width="52" height="22" rx="3" fill="#2e8a3e"/><rect x="44" y="28" width="24" height="24" fill="none" stroke="#1e2a1c" stroke-width="4"/><rect x="22" y="40" width="6" height="12" fill="#1e2a1c"/><circle cx="62" cy="76" r="17" fill="#1e2a1c"/><circle cx="62" cy="76" r="7" fill="#e0a526"/><circle cx="26" cy="80" r="11" fill="#1e2a1c"/><circle cx="26" cy="80" r="4" fill="#e0a526"/>`,
+  cow: () => `<ellipse cx="48" cy="56" rx="30" ry="18" fill="#f7f7f2" stroke="#1e2a1c" stroke-width="2"/><ellipse cx="40" cy="52" rx="8" ry="6" fill="#1e2a1c"/><ellipse cx="58" cy="62" rx="6" ry="5" fill="#1e2a1c"/><rect x="26" y="70" width="6" height="18" fill="#1e2a1c"/><rect x="62" y="70" width="6" height="18" fill="#1e2a1c"/><ellipse cx="80" cy="46" rx="11" ry="9" fill="#f7f7f2" stroke="#1e2a1c" stroke-width="2"/><ellipse cx="86" cy="50" rx="5" ry="4" fill="#f2a7a0"/><path d="M74 38 l-4 -6 M84 38 l4 -6" stroke="#1e2a1c" stroke-width="3"/>`,
+  chicken: () => `<ellipse cx="46" cy="60" rx="24" ry="20" fill="#f7f2e4" stroke="#1e2a1c" stroke-width="2"/><circle cx="66" cy="38" r="11" fill="#f7f2e4" stroke="#1e2a1c" stroke-width="2"/><path d="M60 28 q3 -8 6 0 q3 -8 6 0" fill="#c8352a"/><polygon points="76,38 86,42 76,45" fill="#e0a526"/><circle cx="68" cy="36" r="2" fill="#1e2a1c"/><path d="M26 56 Q14 44 22 38 Q28 48 30 52" fill="#d9cdb0"/><path d="M42 80 v10 M52 80 v10" stroke="#e0a526" stroke-width="3"/>`,
+  beehive: () => `<rect x="26" y="34" width="48" height="14" rx="6" fill="#e0a526"/><rect x="22" y="48" width="56" height="16" rx="6" fill="#c98a12"/><rect x="26" y="64" width="48" height="16" rx="6" fill="#e0a526"/><rect x="18" y="80" width="64" height="10" fill="#6a4930"/><ellipse cx="50" cy="70" rx="5" ry="4" fill="#1e2a1c"/><g fill="#1e2a1c"><ellipse cx="80" cy="26" rx="4" ry="3"/><ellipse cx="18" cy="30" rx="4" ry="3"/></g><g fill="#cfe5f0"><ellipse cx="80" cy="22" rx="3" ry="2"/><ellipse cx="18" cy="26" rx="3" ry="2"/></g>`,
+  apple: () => `<rect x="44" y="56" width="12" height="36" fill="#6a4930"/><circle cx="50" cy="40" r="28" fill="#3f8a4a"/><circle cx="36" cy="32" r="16" fill="#4f9a55"/><g fill="#c8352a"><circle cx="38" cy="44" r="5"/><circle cx="58" cy="30" r="5"/><circle cx="62" cy="50" r="5"/><circle cx="46" cy="24" r="4"/></g>`,
+  house: () => `<rect x="22" y="48" width="56" height="44" fill="#f2efe4" stroke="#1e2a1c" stroke-width="2"/><polygon points="14,50 50,20 86,50" fill="#2b4a6b"/><rect x="62" y="22" width="9" height="18" fill="#6a4930"/><rect x="44" y="66" width="14" height="26" fill="#b3372c"/><rect x="28" y="58" width="11" height="11" fill="#cfe5f0" stroke="#1e2a1c" stroke-width="2"/><rect x="63" y="58" width="11" height="11" fill="#cfe5f0" stroke="#1e2a1c" stroke-width="2"/>`,
+  wheat: () => `<g stroke="#c98a12" stroke-width="3" fill="none"><path d="M50 92 V28"/><path d="M34 92 Q36 60 30 36"/><path d="M66 92 Q64 60 70 36"/></g><g fill="#e0a526">${[28,36,44,52].map(y=>`<ellipse cx="45" cy="${y}" rx="4" ry="6" transform="rotate(-25 45 ${y})"/><ellipse cx="55" cy="${y}" rx="4" ry="6" transform="rotate(25 55 ${y})"/>`).join("")}${[36,44,52].map(y=>`<ellipse cx="27" cy="${y}" rx="3" ry="5"/><ellipse cx="73" cy="${y}" rx="3" ry="5"/>`).join("")}</g>`,
+  sun: () => `<g stroke="#e0a526" stroke-width="5" stroke-linecap="round">${Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;return `<line x1="${50+Math.cos(a)*30}" y1="${50+Math.sin(a)*30}" x2="${50+Math.cos(a)*42}" y2="${50+Math.sin(a)*42}"/>`}).join("")}</g><circle cx="50" cy="50" r="22" fill="#f4c542"/>`,
+  rain: () => `<g fill="#f2f5f7" stroke="#8a9499" stroke-width="2"><circle cx="36" cy="40" r="14"/><circle cx="56" cy="34" r="18"/><circle cx="72" cy="44" r="12"/><rect x="30" y="40" width="48" height="16" stroke="none"/></g><g stroke="#3a7fb0" stroke-width="4" stroke-linecap="round"><line x1="36" y1="66" x2="32" y2="78"/><line x1="52" y1="66" x2="48" y2="82"/><line x1="68" y1="66" x2="64" y2="78"/></g>`,
+  fence: () => `<g fill="#a37b5b" stroke="#6a4930" stroke-width="2"><rect x="14" y="36" width="10" height="54"/><rect x="45" y="36" width="10" height="54"/><rect x="76" y="36" width="10" height="54"/><rect x="10" y="46" width="80" height="8"/><rect x="10" y="68" width="80" height="8"/></g><path d="M8 92 H92" stroke="#3f8a4a" stroke-width="5"/>`,
+  scarecrow: () => `<rect x="47" y="30" width="6" height="62" fill="#6a4930"/><rect x="16" y="44" width="68" height="6" fill="#6a4930"/><path d="M30 46 H70 L64 74 H36Z" fill="#3a7fb0"/><circle cx="50" cy="30" r="11" fill="#f6e6bd" stroke="#1e2a1c" stroke-width="2"/><path d="M34 22 H66 L58 10 H42Z" fill="#c98a12"/><path d="M16 50 l-6 8 M84 50 l6 8" stroke="#e0a526" stroke-width="3"/>`,
+  market: () => `<path d="M12 30 H88 L82 46 H18Z" fill="#b3372c"/><g fill="#f2efe4">${[0,1,2,3].map(i=>`<path d="M${22+i*18} 30 h9 l-2 16 h-9z"/>`).join("")}</g><rect x="22" y="46" width="4" height="40" fill="#6a4930"/><rect x="74" y="46" width="4" height="40" fill="#6a4930"/><rect x="16" y="66" width="68" height="8" fill="#a37b5b"/><g fill="#c8352a"><circle cx="30" cy="62" r="4"/><circle cx="38" cy="62" r="4"/></g><g fill="#e0a526"><circle cx="52" cy="62" r="4"/><circle cx="60" cy="62" r="4"/></g><g fill="#4f9a55"><circle cx="70" cy="62" r="4"/></g>`,
+  scale: () => `<rect x="47" y="24" width="6" height="60" fill="#6a4930"/><rect x="32" y="84" width="36" height="6" fill="#6a4930"/><path d="M18 34 H82" stroke="#1e2a1c" stroke-width="4"/><path d="M18 34 L8 58 H28Z M82 34 L72 58 H92Z" fill="none" stroke="#1e2a1c" stroke-width="2"/><path d="M8 58 Q18 66 28 58 Z" fill="#e0a526"/><path d="M72 58 Q82 66 92 58 Z" fill="#4f9a55"/><circle cx="50" cy="22" r="5" fill="#e0a526"/>`,
+  vane: () => `<rect x="48" y="40" width="4" height="52" fill="#1e2a1c"/><path d="M20 30 H78 L70 22 M78 30 L70 38" stroke="#1e2a1c" stroke-width="4" fill="none"/><path d="M20 30 l-8 -8 v16z" fill="#b3372c"/><path d="M50 30 l-3 -14 l6 0z" fill="#1e2a1c"/><text x="50" y="56" font-family="monospace" font-size="11" font-weight="700" text-anchor="middle" fill="#1e2a1c">N</text><path d="M30 66 H70" stroke="#1e2a1c" stroke-width="3"/>`,
+  almanac: () => `<rect x="18" y="20" width="64" height="70" rx="4" fill="#f2efe4" stroke="#1e2a1c" stroke-width="2"/><rect x="18" y="20" width="64" height="16" fill="#2e6a3e"/><g fill="#1e2a1c"><rect x="30" y="14" width="4" height="12"/><rect x="66" y="14" width="4" height="12"/></g><g fill="#d3dbc7">${[0,1,2,3,4].map(c=>[0,1,2].map(r=>`<rect x="${24+c*11}" y="${44+r*14}" width="8" height="9"/>`).join("")).join("")}</g><rect x="46" y="58" width="8" height="9" fill="#e0a526"/>`,
+  hands: () => `<g><circle cx="34" cy="34" r="9" fill="#f6e6bd" stroke="#1e2a1c" stroke-width="2"/><path d="M22 28 H46 L40 20 H28Z" fill="#c98a12"/><path d="M20 90 V56 Q34 44 48 56 V90Z" fill="#3a7fb0"/></g><g><circle cx="66" cy="38" r="9" fill="#d9a77a" stroke="#1e2a1c" stroke-width="2"/><path d="M54 32 H78 L72 24 H60Z" fill="#b3372c"/><path d="M52 90 V60 Q66 48 80 60 V90Z" fill="#2e6a3e"/></g>`,
+  gear: () => `<circle cx="50" cy="50" r="30" fill="none" stroke="#5a6955" stroke-width="12" stroke-dasharray="8 7.7"/><circle cx="50" cy="50" r="24" fill="#8a9499"/><circle cx="50" cy="50" r="9" fill="#cfe5f0" stroke="#1e2a1c" stroke-width="2"/>`,
+  chart: () => `<rect x="14" y="18" width="72" height="66" rx="3" fill="#f2efe4" stroke="#1e2a1c" stroke-width="2"/><g fill="#2e6a3e"><rect x="24" y="58" width="10" height="20"/><rect x="40" y="46" width="10" height="32"/><rect x="56" y="36" width="10" height="42"/></g><rect x="72" y="26" width="8" height="52" fill="#e0a526"/><path d="M22 48 L40 40 L56 30 L76 22" stroke="#b3372c" stroke-width="3" fill="none"/>`,
+  ribbon: (c) => `<path d="M38 56 L28 94 L40 86 L46 96 L50 58Z" fill="${c||"#2b5fa8"}"/><path d="M62 56 L72 94 L60 86 L54 96 L50 58Z" fill="${c||"#2b5fa8"}" opacity=".85"/><g fill="${c||"#2b5fa8"}">${Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return `<circle cx="${50+Math.cos(a)*22}" cy="${38+Math.sin(a)*22}" r="9"/>`}).join("")}</g><circle cx="50" cy="38" r="20" fill="#f2efe4"/><circle cx="50" cy="38" r="14" fill="${c||"#2b5fa8"}"/><path d="M44 38 l4 5 l8 -10" stroke="#f2efe4" stroke-width="3" fill="none"/>`,
+  basket: () => `<path d="M16 50 H84 L76 88 H24Z" fill="#a37b5b" stroke="#6a4930" stroke-width="2"/><path d="M24 62 H78 M22 74 H80" stroke="#6a4930" stroke-width="2"/><path d="M30 50 Q50 14 70 50" stroke="#6a4930" stroke-width="4" fill="none"/><g fill="#c8352a"><circle cx="36" cy="46" r="7"/><circle cx="64" cy="46" r="7"/></g><circle cx="50" cy="44" r="8" fill="#e0a526"/>`,
+  pig: () => `<ellipse cx="48" cy="58" rx="30" ry="20" fill="#f2a7a0" stroke="#1e2a1c" stroke-width="2"/><circle cx="76" cy="50" r="12" fill="#f2a7a0" stroke="#1e2a1c" stroke-width="2"/><ellipse cx="84" cy="54" rx="6" ry="5" fill="#e48b84"/><circle cx="76" cy="46" r="2" fill="#1e2a1c"/><path d="M70 38 l-2 -8 l8 4z" fill="#e48b84"/><g fill="#1e2a1c"><rect x="28" y="74" width="6" height="14"/><rect x="60" y="74" width="6" height="14"/></g><path d="M18 54 q-8 -4 -4 -10 q4 6 -2 8" stroke="#1e2a1c" stroke-width="2" fill="none"/>`,
+  water: () => `<rect x="24" y="30" width="52" height="40" rx="4" fill="#8a9499"/><rect x="24" y="30" width="52" height="10" fill="#5a6955"/><path d="M40 70 V92 M60 70 V92 M30 92 H70" stroke="#6a4930" stroke-width="5"/><path d="M76 52 H88 V60" stroke="#5a6955" stroke-width="5" fill="none"/><path d="M88 66 q-3 6 0 8 q3 -2 0 -8z" fill="#3a7fb0"/>`
+};
+const ART_KEYS = Object.keys(ART);
+function art(key, color) { const f = ART[key] || ART.seedling; return `<svg viewBox="0 0 100 100" aria-hidden="true">${f(color)}</svg>`; }
+
+/* Farm scene: each week's build sits at a fixed spot. */
+const BUILDS = [
+  { key: "seedling", x: 96,  y: 168, s: .7, label: "First sprout" },
+  { key: "barn",     x: 150, y: 96,  s: 1.25, label: "Red barn" },
+  { key: "chicken",  x: 292, y: 168, s: .62, label: "Hen yard" },
+  { key: "tractor",  x: 370, y: 150, s: .9, label: "Tractor" },
+  { key: "silo",     x: 262, y: 70,  s: 1.25, label: "Grain silo" },
+  { key: "cow",      x: 470, y: 150, s: .85, label: "Dairy herd" },
+  { key: "beehive",  x: 568, y: 160, s: .65, label: "Beehives" },
+  { key: "apple",    x: 610, y: 66,  s: 1.15, label: "Orchard" },
+  { key: "house",    x: 680, y: 110, s: 1.05, label: "Farmhouse" }
+];
+function farmSVG(unlocked) {
+  const items = BUILDS.map((b, i) => {
+    const on = unlocked[i];
+    return `<g class="${on ? "unlocked" : "locked"}" style="transform-origin:${b.x + 50*b.s}px ${b.y + 100*b.s}px"><g transform="translate(${b.x} ${b.y}) scale(${b.s})">${ART[b.key]()}</g></g>`;
+  }).join("");
+  const extraCows = unlocked[5] ? `<g transform="translate(520 166) scale(.6)">${ART.cow()}</g>` : "";
+  const extraTrees = unlocked[7] ? `<g transform="translate(560 84) scale(.8)">${ART.apple()}</g><g transform="translate(640 90) scale(.8)">${ART.apple()}</g>` : "";
+  const ribbon = unlocked[8] ? `<g transform="translate(740 20) scale(.7)">${ART.ribbon("#2b5fa8")}</g>` : "";
+  return `<svg viewBox="0 0 800 250" role="img" aria-label="Farm scene">
+    <rect width="800" height="250" fill="var(--sky)"/>
+    <g transform="translate(20 6) scale(.7)">${ART.sun()}</g>
+    <path d="M0 150 Q160 100 320 140 T640 120 T800 130 V250 H0Z" fill="#7fb36b" opacity=".7"/>
+    <path d="M0 176 Q200 150 420 172 T800 168 V250 H0Z" fill="#5d9a52"/>
+    <g stroke="#4a8443" stroke-width="3" opacity=".7">${Array.from({length:9},(_,i)=>`<path d="M${20+i*22} 250 L${60+i*16} 196"/>`).join("")}</g>
+    <path d="M0 226 H800" stroke="#6a4930" stroke-width="10" opacity=".35"/>
+    ${extraTrees}${items}${extraCows}${ribbon}
+  </svg>`;
+}
+
+/* ================= Schedule ================= */
+const LESSONS_PER_WEEK = 5;
+const TOTAL_DAYS = WEEKS.length * 7;
+function pad(n) { return String(n).padStart(2, "0"); }
+function iso(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function parseISO(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function daysBetween(a, b) { return Math.round((parseISO(iso(b)) - parseISO(iso(a))) / 86400000); }
+function fmt(d) { return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+
+function dayInfo(i) {
+  const w = Math.floor(i / 7), dow = i % 7;
+  const week = WEEKS[w];
+  if (dow < LESSONS_PER_WEEK) return { i, w, dow, kind: "lesson", lesson: week.days[dow], week };
+  if (dow === 5) return { i, w, dow, kind: "market", week };
+  return { i, w, dow, kind: "rest", week };
+}
+function allCards() { return WEEKS.flatMap(w => w.days.flatMap(d => d.cards)); }
+
+/* ================= State + storage ================= */
+const LS_KEY = "harvest-ledger-v1";
+function defaultState() { return { start: iso(new Date()), cards: {}, lessonsDone: {}, market: {}, active: [], xp: 0, ribbons: {} }; }
+let state = defaultState();
+try { const raw = localStorage.getItem(LS_KEY); if (raw) state = Object.assign(defaultState(), JSON.parse(raw)); } catch (e) {}
+
+let remote = null; // db doc reference when the account store is available
+let saveTimer = null;
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+  if (!remote) return;
+  clearTimeout(saveTimer);
+  setSaved("Saving…");
+  saveTimer = setTimeout(() => {
+    remote.set(JSON.parse(JSON.stringify(state))).then(() => setSaved("Saved to your account")).catch(() => setSaved("Saved on this device"));
+  }, 600);
+}
+function setSaved(t) { document.getElementById("savedState").textContent = t; }
+
+async function connectStore() {
+  if (!window.claude || !window.claude.use) return;
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    remote = db.collection("data/users/" + id).doc("harvest-ledger");
+    const snap = await remote.get();
+    if (snap.exists) {
+      state = Object.assign(defaultState(), JSON.parse(JSON.stringify(snap.data())));
+      try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+      quietRibbons();
+      renderAll();
+      setSaved("Saved to your account");
+    } else {
+      save();
+    }
+  } catch (e) { remote = null; }
+}
+
+/* ================= Derived progress ================= */
+function weekComplete(w) {
+  for (let d = 0; d < LESSONS_PER_WEEK; d++) if (!state.lessonsDone[w * 7 + d]) return false;
+  return state.market[w] != null;
+}
+function knownCount() { return Object.values(state.cards).filter(v => v === "known").length; }
+function streak() {
+  const set = new Set(state.active);
+  let n = 0, d = new Date();
+  if (!set.has(iso(d))) d = addDays(d, -1);
+  while (set.has(iso(d))) { n++; d = addDays(d, -1); }
+  return n;
+}
+function bestStreak() {
+  const ds = [...new Set(state.active)].sort();
+  let best = 0, run = 0, prev = null;
+  for (const s of ds) { const d = parseISO(s); run = prev && daysBetween(prev, d) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; }
+  return best;
+}
+function markActive() { const t = iso(new Date()); if (!state.active.includes(t)) state.active.push(t); }
+function farmUnlocks() {
+  const anyLesson = Object.keys(state.lessonsDone).length > 0;
+  return [anyLesson, ...WEEKS.map((_, w) => weekComplete(w))];
+}
+
+const RIBBONS = [
+  { id: "sprout", title: "First Sprout", desc: "Finish your first day of cards.", color: "#4f9a55", test: () => Object.keys(state.lessonsDone).length >= 1 },
+  ...WEEKS.map((wk, w) => ({ id: "week" + w, title: wk.build, desc: `Complete week ${w + 1}: ${wk.title}.`, color: w === 3 ? "#c98a12" : w === WEEKS.length - 1 ? "#2b5fa8" : "#b3372c", test: () => weekComplete(w) })),
+  { id: "halfway", title: "Halfway Harvest", desc: "Finish four full weeks. The silo is half full.", color: "#c98a12", test: () => [0,1,2,3].every(weekComplete) },
+  { id: "streak3", title: "Three Days of Rain", desc: "Study three days in a row.", color: "#3a7fb0", test: () => bestStreak() >= 3 },
+  { id: "streak7", title: "Week of Sunshine", desc: "Study seven days in a row.", color: "#e0a526", test: () => bestStreak() >= 7 },
+  { id: "streak21", title: "Steady Hand at the Plough", desc: "Study 21 days in a row.", color: "#6a4930", test: () => bestStreak() >= 21 },
+  { id: "known25", title: "First Bushels", desc: "Harvest 25 cards.", color: "#4f9a55", test: () => knownCount() >= 25 },
+  { id: "known75", title: "Bumper Crop", desc: "Harvest 75 cards.", color: "#2e6a3e", test: () => knownCount() >= 75 },
+  { id: "knownAll", title: "Full Granary", desc: "Harvest every card in the course.", color: "#c98a12", test: () => knownCount() >= allCards().length },
+  { id: "perfect", title: "Blue Ribbon at Market", desc: "Score 100% on a Market Day quiz.", color: "#2b5fa8", test: () => Object.values(state.market).some(s => s === 100) },
+  { id: "greenhouse", title: "Greenhouse Keeper", desc: "Turn 10 still-growing cards into harvested ones in the greenhouse.", color: "#3f8a4a", test: () => (state.rescued || 0) >= 10 },
+  { id: "champion", title: "County Fair Champion", desc: "Complete all eight weeks.", color: "#2b5fa8", test: () => WEEKS.every((_, w) => weekComplete(w)) }
+];
+function quietRibbons() { RIBBONS.forEach(r => { if (r.test()) state.ribbons[r.id] = state.ribbons[r.id] || iso(new Date()); }); }
+function checkRibbons() {
+  const fresh = [];
+  RIBBONS.forEach(r => { if (!state.ribbons[r.id] && r.test()) { state.ribbons[r.id] = iso(new Date()); fresh.push(r); } });
+  fresh.forEach((r, k) => setTimeout(() => celebrate(r), k * 2600));
+}
+
+/* ================= Celebration ================= */
+let toastTimer;
+function celebrate(r) {
+  const t = document.getElementById("toast");
+  t.innerHTML = `${art("ribbon", r.color)}<div><b>${r.title}</b><span>${r.desc}</span></div>`;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+  burst();
+}
+function burst() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = document.getElementById("burst"), ctx = c.getContext("2d");
+  c.width = innerWidth; c.height = innerHeight;
+  const cols = ["#e0a526", "#4f9a55", "#c8352a", "#f4c542", "#6cbf7d"];
+  const ps = Array.from({ length: 70 }, () => ({ x: innerWidth / 2, y: innerHeight * .7, vx: (Math.random() - .5) * 12, vy: -Math.random() * 13 - 4, r: Math.random() * Math.PI, c: cols[Math.floor(Math.random() * cols.length)], s: 5 + Math.random() * 6 }));
+  let f = 0;
+  (function tick() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += .35; p.r += .15; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s / 2.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); });
+    if (++f < 90) requestAnimationFrame(tick); else ctx.clearRect(0, 0, c.width, c.height);
+  })();
+}
+
+/* ================= Rendering ================= */
+let view = { day: null, card: 0, flipped: false, mode: "lesson", quiz: null, greenhouse: null };
+function todayIndex() { return Math.max(0, Math.min(TOTAL_DAYS - 1, daysBetween(parseISO(state.start), new Date()))); }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function renderFarm() {
+  const u = farmUnlocks();
+  const next = BUILDS.findIndex((_, i) => !u[i]);
+  document.getElementById("farm").innerHTML = farmSVG(u) + `<span class="farm-cap">${next === -1 ? "Every building is up. Champion farm!" : "Next to build: " + BUILDS[next].label}</span>`;
+}
+function renderStats() {
+  const total = allCards().length, known = knownCount();
+  const weeksDone = WEEKS.filter((_, w) => weekComplete(w)).length;
+  const dayNo = daysBetween(parseISO(state.start), new Date()) + 1;
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><b>${state.xp}</b><span>Bushels earned</span></div>
+    <div class="stat"><b>${streak()}</b><span>Day streak · best ${bestStreak()}</span></div>
+    <div class="stat"><b>${known}/${total}</b><span>Cards harvested</span><div class="bar"><i style="width:${total ? known / total * 100 : 0}%"></i></div></div>
+    <div class="stat"><b>${weeksDone}/${WEEKS.length}</b><span>Weeks complete · day ${Math.max(1, Math.min(dayNo, TOTAL_DAYS))} of ${TOTAL_DAYS}</span><div class="bar"><i style="width:${weeksDone / WEEKS.length * 100}%"></i></div></div>`;
+}
+
+function renderToday() {
+  const el = document.getElementById("panel-today");
+  if (view.day == null) view.day = todayIndex();
+  const info = dayInfo(view.day);
+  const date = addDays(parseISO(state.start), view.day);
+  const isToday = view.day === todayIndex();
+  let status = "";
+  if (info.kind === "lesson" && state.lessonsDone[view.day]) status = `<span class="chip done">Harvested</span>`;
+  if (info.kind === "market" && state.market[info.w] != null) status = `<span class="chip done">Market score ${state.market[info.w]}%</span>`;
+  const head = `
+    <div class="lesson-head">
+      <div class="when"><span class="eyebrow">Week ${info.w + 1} · ${DAY_NAMES[info.dow]} ${fmt(date)}${isToday ? " · today" : ""}</span>${status}</div>
+      <h2>${info.kind === "lesson" ? esc(info.lesson.title) : info.kind === "market" ? "Market Day: " + esc(info.week.title) : "Fallow day"}</h2>
+      <div class="daynav">
+        <button class="btn" id="prevDay" ${view.day === 0 ? "disabled" : ""}>Previous day</button>
+        <button class="btn" id="goToday" ${isToday ? "disabled" : ""}>Today</button>
+        <button class="btn" id="nextDay" ${view.day >= TOTAL_DAYS - 1 ? "disabled" : ""}>Next day</button>
+      </div>
+    </div>`;
+  let main = "";
+  if (view.mode === "greenhouse") main = greenhouseHTML();
+  else if (info.kind === "lesson") main = lessonHTML(info);
+  else if (info.kind === "market") main = marketHTML(info);
+  else main = restHTML(info);
+  el.innerHTML = `<div class="today"><div class="deck">${head}${main}</div><aside class="side">${sideHTML(info)}</aside></div>`;
+  wireToday(info);
+}
+
+function cardHTML(c, flipped, kicker) {
+  return `<div class="packet ${flipped ? "flipped" : ""}" id="packet" tabindex="0" role="button" aria-label="Flash card. Press to flip.">
+    <div class="packet-inner">
+      <div class="face front">
+        <div class="packet-art">${art(c.art)}</div>
+        <div class="face-body"><span class="eyebrow">${esc(kicker)}</span><div class="term">${esc(c.term)}</div><p class="prompt-line">Say the definition out loud, then flip the packet.</p></div>
+        <div class="face-foot"><span>Lot ${esc(c.id)}</span><span>Textbook §${esc(c.section)}</span></div>
+      </div>
+      <div class="face back">
+        <div class="back-grid">
+          <span class="eyebrow">${esc(c.term)}</span>
+          <p class="def">${esc(c.definition)}</p>
+          <div class="onfarm">${art(c.art)}<div><b>On the farm</b>${esc(c.farm)}</div></div>
+        </div>
+        <div class="face-foot"><span>Lot ${esc(c.id)}</span><span>Textbook §${esc(c.section)}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+function dotsHTML(cards, cur) {
+  return `<div class="dots" aria-hidden="true">${cards.map((c, k) => `<i class="${state.cards[c.id] || ""} ${k === cur ? "cur" : ""}"></i>`).join("")}</div>`;
+}
+function lessonHTML(info) {
+  const cards = info.lesson.cards;
+  if (view.card >= cards.length) {
+    const known = cards.filter(c => state.cards[c.id] === "known").length;
+    return `<div class="done-card">${art(known === cards.length ? "basket" : "seedling")}
+      <h2>${known === cards.length ? "Clean harvest!" : "Day planted"}</h2>
+      <p>You harvested ${known} of ${cards.length} cards today. ${known < cards.length ? "The rest are waiting in the greenhouse for review." : "Every packet is in the basket."}</p>
+      <div class="rate"><button class="btn" id="again">Go through them again</button>${info.dow < 4 ? `<button class="btn primary" id="nextDay2">Peek at tomorrow</button>` : ""}</div></div>`;
+  }
+  const c = cards[view.card];
+  return `${cardHTML(c, view.flipped, `${info.lesson.chapter} · card ${view.card + 1} of ${cards.length}`)}
+    ${dotsHTML(cards, view.card)}
+    <div class="rate">
+      <button class="btn gold" id="growing" ${view.flipped ? "" : "disabled"}>Still growing</button>
+      <button class="btn primary" id="known" ${view.flipped ? "" : "disabled"}>Harvested it</button>
+    </div>
+    <p class="hint">${view.flipped ? "Be honest. Still-growing cards come back in the greenhouse." : "Tap the packet or press the space bar to flip it."}</p>`;
+}
+function marketHTML(info) {
+  const pool = info.week.days.flatMap(d => d.cards);
+  if (!view.quiz || view.quiz.w !== info.w) view.quiz = makeQuiz(info.w, pool);
+  const q = view.quiz;
+  if (q.idx >= q.items.length) {
+    const pct = Math.round(q.right / q.items.length * 100);
+    return `<div class="done-card">${art("ribbon", pct === 100 ? "#2b5fa8" : pct >= 80 ? "#b3372c" : "#c98a12")}
+      <h2>${pct === 100 ? "Blue ribbon!" : pct >= 80 ? "Red ribbon. Strong showing." : "Back to the field"}</h2>
+      <p>You sold ${q.right} of ${q.items.length} crates at market (${pct}%). ${state.market[info.w] != null ? `Best score this week: ${state.market[info.w]}%.` : ""}</p>
+      <div class="rate"><button class="btn" id="retryQuiz">Run the market again</button></div></div>`;
+  }
+  const it = q.items[q.idx];
+  return `<div class="quiz">
+    <span class="eyebrow">Crate ${q.idx + 1} of ${q.items.length} · ${q.right} sold</span>
+    <p class="q">${esc(it.card.definition)}</p>
+    <div class="opts">${it.opts.map((o, k) => `<button class="opt" data-k="${k}">${esc(o.term)}</button>`).join("")}</div>
+    <p class="hint">Pick the term that matches. Each right answer earns 5 bushels.</p>
+  </div>`;
+}
+function makeQuiz(w, pool) {
+  const shuffled = pool.slice().sort(() => Math.random() - .5).slice(0, Math.min(12, pool.length));
+  const items = shuffled.map(card => {
+    const others = pool.filter(c => c.id !== card.id).sort(() => Math.random() - .5).slice(0, 3);
+    return { card, opts: [card, ...others].sort(() => Math.random() - .5) };
+  });
+  return { w, items, idx: 0, right: 0, answered: false };
+}
+function restHTML(info) {
+  const next = WEEKS[info.w + 1];
+  return `<div class="done-card">${art("sun")}
+    <h2>Let the field rest</h2>
+    <p>Fallow days keep the soil rich. Take the day off, or tend the greenhouse if any cards are still growing.</p>
+    ${next ? `<p><b>Coming up in week ${info.w + 2}:</b> ${esc(next.title)} (${esc(next.chapters)}). You'll build: ${esc(next.build)}.</p>` : `<p>That's the end of the season. Check your ribbons.</p>`}
+  </div>`;
+}
+function greenhouseHTML() {
+  const g = view.greenhouse;
+  if (!g || g.idx >= g.cards.length) {
+    return `<div class="done-card">${art("seedling")}<h2>Greenhouse tended</h2><p>${g && g.cards.length ? `You reviewed ${g.cards.length} cards.` : "Nothing is still growing. Lovely."}</p><div class="rate"><button class="btn" id="leaveGreenhouse">Back to today's lesson</button></div></div>`;
+  }
+  const c = g.cards[g.idx];
+  return `${cardHTML(c, view.flipped, `Greenhouse · ${g.idx + 1} of ${g.cards.length}`)}
+    <div class="rate">
+      <button class="btn gold" id="growing" ${view.flipped ? "" : "disabled"}>Still growing</button>
+      <button class="btn primary" id="known" ${view.flipped ? "" : "disabled"}>Harvested it</button>
+      <button class="btn" id="leaveGreenhouse">Leave greenhouse</button>
+    </div>`;
+}
+function sideHTML(info) {
+  const growing = allCards().filter(c => state.cards[c.id] === "growing").length;
+  const plan = info.kind === "lesson"
+    ? `<ol><li>Read §${esc(info.lesson.sections.join(", §"))} in your textbook (15–20 min).</li><li>Flip today's ${info.lesson.cards.length} seed packets (10 min).</li><li>Explain one card to someone, or to a cow.</li></ol>`
+    : info.kind === "market"
+    ? `<ol><li>Skim your notes from this week (10 min).</li><li>Take the Market Day quiz (10 min).</li><li>Score 80% or more to earn the week's build.</li></ol>`
+    : `<ul><li>Rest day. No new cards.</li><li>Optional: clear the greenhouse.</li></ul>`;
+  return `
+    <div class="box"><h3>Today's chores</h3>${plan}</div>
+    <div class="box"><h3>This week's build</h3><div style="display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center">${art(BUILDS[info.w + 1].key)}<div><b>${esc(info.week.build)}</b><p class="small">Finish all five lesson days and the Market Day quiz with 80% or better.</p></div></div></div>
+    <div class="box"><h3>Greenhouse</h3><p class="small">${growing ? `${growing} card${growing === 1 ? " is" : "s are"} still growing. A quick review turns them into harvest.` : "No cards are waiting for review."}</p><button class="btn" id="openGreenhouse" ${growing ? "" : "disabled"}>Tend the greenhouse</button></div>`;
+}
+
+function wireToday(info) {
+  const $ = id => document.getElementById(id);
+  const go = d => { view = { day: d, card: 0, flipped: false, mode: "lesson", quiz: null, greenhouse: null }; renderToday(); };
+  $("prevDay").onclick = () => go(view.day - 1);
+  $("nextDay").onclick = () => go(view.day + 1);
+  $("goToday").onclick = () => go(todayIndex());
+  if ($("nextDay2")) $("nextDay2").onclick = () => go(view.day + 1);
+  if ($("again")) $("again").onclick = () => { view.card = 0; view.flipped = false; renderToday(); };
+  const pk = $("packet");
+  if (pk) {
+    const flip = () => { view.flipped = !view.flipped; pk.classList.toggle("flipped", view.flipped); ["growing", "known"].forEach(b => { if ($(b)) $(b).disabled = !view.flipped; }); document.querySelector(".hint") && (document.querySelector(".hint").textContent = view.flipped ? "Be honest. Still-growing cards come back in the greenhouse." : "Tap the packet or press the space bar to flip it."); };
+    pk.onclick = flip;
+    pk.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
+  }
+  if ($("known")) $("known").onclick = () => rate("known", info);
+  if ($("growing")) $("growing").onclick = () => rate("growing", info);
+  if ($("openGreenhouse")) $("openGreenhouse").onclick = () => {
+    view.mode = "greenhouse"; view.flipped = false;
+    view.greenhouse = { cards: allCards().filter(c => state.cards[c.id] === "growing").sort(() => Math.random() - .5), idx: 0 };
+    renderToday();
+  };
+  if ($("leaveGreenhouse")) $("leaveGreenhouse").onclick = () => { view.mode = "lesson"; view.greenhouse = null; view.flipped = false; renderToday(); };
+  document.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(Number(b.dataset.k), info));
+  if ($("retryQuiz")) $("retryQuiz").onclick = () => { view.quiz = null; renderToday(); };
+}
+
+function rate(r, info) {
+  if (view.mode === "greenhouse") {
+    const c = view.greenhouse.cards[view.greenhouse.idx];
+    if (r === "known") { state.cards[c.id] = "known"; state.rescued = (state.rescued || 0) + 1; state.xp += 3; }
+    view.greenhouse.idx++; view.flipped = false;
+  } else {
+    const cards = info.lesson.cards, c = cards[view.card];
+    const before = state.cards[c.id];
+    state.cards[c.id] = r;
+    if (r === "known" && before !== "known") state.xp += 5;
+    view.card++; view.flipped = false;
+    if (view.card >= cards.length && !state.lessonsDone[view.day]) { state.lessonsDone[view.day] = iso(new Date()); state.xp += 20; }
+  }
+  markActive(); checkRibbons(); save(); renderAll();
+}
+function answer(k, info) {
+  const q = view.quiz, it = q.items[q.idx];
+  if (q.answered) return;
+  q.answered = true;
+  const ok = it.opts[k].id === it.card.id;
+  if (ok) { q.right++; state.xp += 5; }
+  document.querySelectorAll(".opt").forEach((b, j) => { b.disabled = true; if (it.opts[j].id === it.card.id) b.classList.add("right"); else if (j === k) b.classList.add("wrong"); });
+  setTimeout(() => {
+    q.idx++; q.answered = false;
+    if (q.idx >= q.items.length) {
+      const pct = Math.round(q.right / q.items.length * 100);
+      if (pct >= 80) state.market[info.w] = Math.max(state.market[info.w] || 0, pct);
+      markActive(); checkRibbons(); save(); renderAll();
+    } else { save(); renderToday(); renderStats(); }
+  }, ok ? 650 : 1400);
+}
+
+function renderCalendar() {
+  const el = document.getElementById("panel-calendar");
+  const start = parseISO(state.start), t = todayIndex();
+  el.innerHTML = `<div class="weeks">${WEEKS.map((wk, w) => `
+    <article class="week ${weekComplete(w) ? "complete" : ""}">
+      <div class="week-head">${art(BUILDS[w + 1].key)}<div><span class="eyebrow">Week ${w + 1} · ${fmt(addDays(start, w * 7))}–${fmt(addDays(start, w * 7 + 6))}</span><h3>${esc(wk.title)}</h3><p>${esc(wk.chapters)} · builds the ${esc(wk.build.toLowerCase())}</p></div></div>
+      <ul class="days">${Array.from({ length: 7 }, (_, dow) => {
+        const i = w * 7 + dow, info = dayInfo(i);
+        const label = info.kind === "lesson" ? info.lesson.title : info.kind === "market" ? "Market Day quiz" : "Fallow day (rest)";
+        const ok = info.kind === "lesson" ? state.lessonsDone[i] : info.kind === "market" ? state.market[w] != null : false;
+        return `<li class="${i === t ? "today-row" : ""}"><button data-day="${i}"><span class="d">${DAY_NAMES[dow]} ${fmt(addDays(start, i))}</span><span class="t">${esc(label)}</span><span class="mark ${ok ? "ok" : info.kind === "rest" ? "rest" : ""}">${ok ? "✓" : ""}</span></button></li>`;
+      }).join("")}</ul>
+    </article>`).join("")}</div>`;
+  el.querySelectorAll("[data-day]").forEach(b => b.onclick = () => {
+    view = { day: Number(b.dataset.day), card: 0, flipped: false, mode: "lesson", quiz: null, greenhouse: null };
+    selectTab("today");
+  });
+}
+function renderRibbons() {
+  const el = document.getElementById("panel-ribbons");
+  const got = RIBBONS.filter(r => state.ribbons[r.id]).length;
+  el.innerHTML = `<p class="eyebrow">${got} of ${RIBBONS.length} ribbons pinned</p><div class="ribbons">${RIBBONS.map(r => {
+    const on = !!state.ribbons[r.id];
+    return `<div class="ribbon ${on ? "" : "locked"}">${art("ribbon", r.color)}<div><h3>${esc(r.title)}</h3><p>${esc(r.desc)}${on ? ` Won ${fmt(parseISO(state.ribbons[r.id]))}.` : ""}</p></div></div>`;
+  }).join("")}</div>`;
+}
+
+function selectTab(name) {
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+  ["today", "calendar", "ribbons"].forEach(n => document.getElementById("panel-" + n).hidden = n !== name);
+  renderAll();
+}
+function renderAll() { renderFarm(); renderStats(); renderToday(); renderCalendar(); renderRibbons(); }
+
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => selectTab(b.dataset.tab));
+const sd = document.getElementById("startDate");
+sd.value = state.start;
+sd.onchange = () => { if (sd.value) { state.start = sd.value; view.day = null; save(); renderAll(); } };
+document.getElementById("bookLine").textContent = `${COURSE.book} · 8-week planting season`;
+
+renderAll();
+connectStore().then(() => { sd.value = state.start; });
+})();
+</script>
