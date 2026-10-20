@@ -116,11 +116,21 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 .onfarm svg { width: 54px; height: 54px; }
 .onfarm b { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; display: block; color: var(--muted); }
 .rate { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-.dots { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
-.dots i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ink); background: transparent; }
-.dots i.known { background: var(--field); border-color: var(--field); }
-.dots i.growing { background: var(--wheat); border-color: var(--wheat); }
-.dots i.cur { outline: 2px solid var(--wheat); outline-offset: 2px; }
+.cardnav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.dots { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.dots button { width: 16px; height: 16px; padding: 0; border-radius: 50%; border: 2px solid var(--ink); background: transparent; }
+.dots button.known { background: var(--field); border-color: var(--field); }
+.dots button.growing { background: var(--wheat); border-color: var(--wheat); }
+.dots button.cur { outline: 2px solid var(--wheat); outline-offset: 2px; }
+.complete { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; background: var(--paper); border: 2px dashed var(--line); border-radius: 14px; padding: 12px 16px; }
+.complete.done { border: 2px solid var(--field); background: var(--wheat-soft); }
+.complete svg { width: 56px; height: 56px; }
+.complete b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; display: block; }
+.complete span { color: var(--muted); font-size: .9rem; }
+.linkish { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 4px; }
+.libbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.libbar select { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--paper); color: var(--ink); }
+.library { max-width: 720px; width: 100%; margin: 0 auto; display: grid; gap: 14px; }
 .hint { text-align: center; color: var(--muted); font-size: .85rem; }
 
 .side { display: grid; gap: 14px; }
@@ -186,6 +196,10 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 }
 @media (max-width: 520px) {
   .opts { grid-template-columns: minmax(0,1fr); }
+  .complete { grid-template-columns: 44px minmax(0, 1fr); }
+  .complete svg { width: 44px; height: 44px; }
+  .complete .btn, .complete .linkish { grid-column: 1 / -1; }
+  .cardnav .btn { padding-inline: 10px; }
   .packet-inner { min-height: 470px; }
   .farm-cap { font-size: .68rem; left: 8px; bottom: 6px; padding: 2px 8px; }
   .days li button { grid-template-columns: 62px minmax(0,1fr) auto; padding-inline: 10px; }
@@ -217,11 +231,13 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
   <nav class="tabs" role="tablist">
     <button role="tab" id="tab-today" aria-selected="true" data-tab="today">Today</button>
     <button role="tab" id="tab-calendar" aria-selected="false" data-tab="calendar">Planting calendar</button>
+    <button role="tab" id="tab-library" aria-selected="false" data-tab="library">Card barn</button>
     <button role="tab" id="tab-ribbons" aria-selected="false" data-tab="ribbons">Ribbons</button>
   </nav>
 
   <section class="panel" id="panel-today"></section>
   <section class="panel" id="panel-calendar" hidden></section>
+  <section class="panel" id="panel-library" hidden></section>
   <section class="panel" id="panel-ribbons" hidden></section>
 </div>
 
@@ -455,7 +471,7 @@ function renderToday() {
   const date = addDays(parseISO(state.start), view.day);
   const isToday = view.day === todayIndex();
   let status = "";
-  if (info.kind === "lesson" && state.lessonsDone[view.day]) status = `<span class="chip done">Harvested</span>`;
+  if (info.kind === "lesson" && state.lessonsDone[view.day]) status = `<span class="chip done">Completed ✓</span>`;
   if (info.kind === "market" && state.market[info.w] != null) status = `<span class="chip done">Market score ${state.market[info.w]}%</span>`;
   const head = `
     <div class="lesson-head">
@@ -495,26 +511,30 @@ function cardHTML(c, flipped, kicker) {
     </div>
   </div>`;
 }
-function dotsHTML(cards, cur) {
-  return `<div class="dots" aria-hidden="true">${cards.map((c, k) => `<i class="${state.cards[c.id] || ""} ${k === cur ? "cur" : ""}"></i>`).join("")}</div>`;
-}
 function lessonHTML(info) {
   const cards = info.lesson.cards;
-  if (view.card >= cards.length) {
-    const known = cards.filter(c => state.cards[c.id] === "known").length;
-    return `<div class="done-card">${art(known === cards.length ? "basket" : "seedling")}
-      <h2>${known === cards.length ? "Clean harvest!" : "Day planted"}</h2>
-      <p>You harvested ${known} of ${cards.length} cards today. ${known < cards.length ? "The rest are waiting in the greenhouse for review." : "Every packet is in the basket."}</p>
-      <div class="rate"><button class="btn" id="again">Go through them again</button>${info.dow < 4 ? `<button class="btn primary" id="nextDay2">Peek at tomorrow</button>` : ""}</div></div>`;
-  }
+  view.card = Math.min(view.card, cards.length - 1);
   const c = cards[view.card];
+  const doneOn = state.lessonsDone[view.day];
+  const known = cards.filter(x => state.cards[x.id] === "known").length;
+  const complete = doneOn
+    ? `<div class="complete done">${art("basket")}<div><b>Lesson complete</b><span>You marked this day done on ${fmt(parseISO(doneOn))}. Keep flipping as much as you like.</span></div><button class="linkish" id="undoDone">Undo</button></div>`
+    : `<div class="complete">${art("seedling")}<div><b>Finished today's lesson?</b><span>Flip the cards as many times as you want, then mark the day done to earn 20 bushels.</span></div><button class="btn primary" id="markDone">Mark today complete</button></div>`;
   return `${cardHTML(c, view.flipped, `${info.lesson.chapter} · card ${view.card + 1} of ${cards.length}`)}
-    ${dotsHTML(cards, view.card)}
+    ${navHTML(cards, view.card)}
     <div class="rate">
-      <button class="btn gold" id="growing" ${view.flipped ? "" : "disabled"}>Still growing</button>
-      <button class="btn primary" id="known" ${view.flipped ? "" : "disabled"}>Harvested it</button>
+      <button class="btn gold" id="growing">Still growing</button>
+      <button class="btn primary" id="known">Harvested it</button>
     </div>
-    <p class="hint">${view.flipped ? "Be honest. Still-growing cards come back in the greenhouse." : "Tap the packet or press the space bar to flip it."}</p>`;
+    <p class="hint">Tap the packet or press space to flip it. Use the arrow keys to move between cards. ${known} of ${cards.length} harvested today.</p>
+    ${complete}`;
+}
+function navHTML(cards, cur) {
+  return `<div class="cardnav">
+    <button class="btn" id="prevCard" aria-label="Previous card">← Previous</button>
+    <div class="dots">${cards.map((x, k) => `<button class="${state.cards[x.id] || ""} ${k === cur ? "cur" : ""}" data-card="${k}" aria-label="Card ${k + 1}"></button>`).join("")}</div>
+    <button class="btn" id="nextCard" aria-label="Next card">Next →</button>
+  </div>`;
 }
 function marketHTML(info) {
   const pool = info.week.days.flatMap(d => d.cards);
@@ -559,8 +579,8 @@ function greenhouseHTML() {
   const c = g.cards[g.idx];
   return `${cardHTML(c, view.flipped, `Greenhouse · ${g.idx + 1} of ${g.cards.length}`)}
     <div class="rate">
-      <button class="btn gold" id="growing" ${view.flipped ? "" : "disabled"}>Still growing</button>
-      <button class="btn primary" id="known" ${view.flipped ? "" : "disabled"}>Harvested it</button>
+      <button class="btn gold" id="growing">Still growing</button>
+      <button class="btn primary" id="known">Harvested it</button>
       <button class="btn" id="leaveGreenhouse">Leave greenhouse</button>
     </div>`;
 }
@@ -583,14 +603,23 @@ function wireToday(info) {
   $("prevDay").onclick = () => go(view.day - 1);
   $("nextDay").onclick = () => go(view.day + 1);
   $("goToday").onclick = () => go(todayIndex());
-  if ($("nextDay2")) $("nextDay2").onclick = () => go(view.day + 1);
-  if ($("again")) $("again").onclick = () => { view.card = 0; view.flipped = false; renderToday(); };
-  const pk = $("packet");
-  if (pk) {
-    const flip = () => { view.flipped = !view.flipped; pk.classList.toggle("flipped", view.flipped); ["growing", "known"].forEach(b => { if ($(b)) $(b).disabled = !view.flipped; }); document.querySelector(".hint") && (document.querySelector(".hint").textContent = view.flipped ? "Be honest. Still-growing cards come back in the greenhouse." : "Tap the packet or press the space bar to flip it."); };
-    pk.onclick = flip;
-    pk.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
-  }
+  wirePacket(document.getElementById("panel-today"), v => view.flipped = v, () => view.flipped);
+  if (info.kind === "lesson" && view.mode !== "greenhouse") {
+    const n = info.lesson.cards.length;
+    const move = k => { view.card = (k + n) % n; view.flipped = false; renderToday(); };
+    $("prevCard").onclick = () => move(view.card - 1);
+    $("nextCard").onclick = () => move(view.card + 1);
+    document.querySelectorAll("[data-card]").forEach(b => b.onclick = () => move(Number(b.dataset.card)));
+    keyNav = { prev: () => move(view.card - 1), next: () => move(view.card + 1) };
+    if ($("markDone")) $("markDone").onclick = () => {
+      state.lessonsDone[view.day] = iso(new Date()); state.xp += 20;
+      markActive(); save();
+      celebrate({ title: "Lesson complete!", desc: `${info.lesson.title} is in the barn. +20 bushels.`, color: "#4f9a55" });
+      renderAll();
+      setTimeout(() => { checkRibbons(); save(); renderAll(); }, 2600);
+    };
+    if ($("undoDone")) $("undoDone").onclick = () => { delete state.lessonsDone[view.day]; state.xp = Math.max(0, state.xp - 20); save(); renderAll(); };
+  } else keyNav = null;
   if ($("known")) $("known").onclick = () => rate("known", info);
   if ($("growing")) $("growing").onclick = () => rate("growing", info);
   if ($("openGreenhouse")) $("openGreenhouse").onclick = () => {
@@ -613,8 +642,7 @@ function rate(r, info) {
     const before = state.cards[c.id];
     state.cards[c.id] = r;
     if (r === "known" && before !== "known") state.xp += 5;
-    view.card++; view.flipped = false;
-    if (view.card >= cards.length && !state.lessonsDone[view.day]) { state.lessonsDone[view.day] = iso(new Date()); state.xp += 20; }
+    view.card = (view.card + 1) % cards.length; view.flipped = false;
   }
   markActive(); checkRibbons(); save(); renderAll();
 }
@@ -634,6 +662,77 @@ function answer(k, info) {
     } else { save(); renderToday(); renderStats(); }
   }, ok ? 650 : 1400);
 }
+
+/* Shared flip wiring for any panel holding a #packet. */
+function wirePacket(root, setFlipped, getFlipped) {
+  const pk = root.querySelector("#packet");
+  if (!pk) return;
+  const flip = () => { setFlipped(!getFlipped()); pk.classList.toggle("flipped", getFlipped()); };
+  pk.onclick = flip;
+  pk.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
+}
+
+/* Card barn: browse every card freely. */
+let lib = { filter: "all", order: null, idx: 0, flipped: false };
+function libCards() {
+  const pool = lib.filter === "all" ? allCards()
+    : lib.filter === "growing" ? allCards().filter(c => state.cards[c.id] === "growing")
+    : WEEKS[Number(lib.filter)].days.flatMap(d => d.cards);
+  if (!lib.order) return pool;
+  const byId = new Map(pool.map(c => [c.id, c]));
+  return lib.order.map(id => byId.get(id)).filter(Boolean);
+}
+function renderLibrary() {
+  const el = document.getElementById("panel-library");
+  const cards = libCards();
+  lib.idx = cards.length ? Math.min(lib.idx, cards.length - 1) : 0;
+  const opts = [["all", "All 160 cards"], ...WEEKS.map((w, i) => [String(i), `Week ${i + 1}: ${w.title} (${w.chapters})`]), ["growing", "Still growing only"]];
+  const c = cards[lib.idx];
+  el.innerHTML = `<div class="library">
+    <div class="libbar">
+      <label for="libFilter" class="eyebrow">Show</label>
+      <select id="libFilter">${opts.map(([v, t]) => `<option value="${v}" ${v === lib.filter ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>
+      <button class="btn" id="libShuffle">${lib.order ? "Unshuffle" : "Shuffle"}</button>
+    </div>
+    ${c ? `${cardHTML(c, lib.flipped, `Card ${lib.idx + 1} of ${cards.length}`)}
+    <div class="cardnav"><button class="btn" id="libPrev">← Previous</button><span class="hint">${state.cards[c.id] === "known" ? "Harvested" : state.cards[c.id] === "growing" ? "Still growing" : "Not rated yet"}</span><button class="btn" id="libNext">Next →</button></div>
+    <div class="rate"><button class="btn gold" id="libGrowing">Still growing</button><button class="btn primary" id="libKnown">Harvested it</button></div>
+    <p class="hint">Flip and browse as much as you like. Arrow keys move, space flips.</p>`
+    : `<div class="done-card">${art("seedling")}<h2>Nothing here yet</h2><p>No cards match this filter.</p></div>`}
+  </div>`;
+  const $ = id => document.getElementById(id);
+  $("libFilter").onchange = e => { lib = { filter: e.target.value, order: null, idx: 0, flipped: false }; renderLibrary(); };
+  $("libShuffle").onclick = () => { lib.order = lib.order ? null : libCards().map(x => x.id).sort(() => Math.random() - .5); lib.idx = 0; lib.flipped = false; renderLibrary(); };
+  if (!c) return;
+  const n = cards.length;
+  const move = k => { lib.idx = (k + n) % n; lib.flipped = false; renderLibrary(); };
+  $("libPrev").onclick = () => move(lib.idx - 1);
+  $("libNext").onclick = () => move(lib.idx + 1);
+  const rateLib = r => {
+    const before = state.cards[c.id];
+    state.cards[c.id] = r;
+    if (r === "known" && before !== "known") { state.xp += 5; if (before === "growing") state.rescued = (state.rescued || 0) + 1; }
+    markActive(); checkRibbons(); save();
+    if (lib.filter !== "growing") lib.idx = (lib.idx + 1) % n;
+    lib.flipped = false; renderAll();
+  };
+  $("libKnown").onclick = () => rateLib("known");
+  $("libGrowing").onclick = () => rateLib("growing");
+  wirePacket(el, v => lib.flipped = v, () => lib.flipped);
+  libKeys = { prev: () => move(lib.idx - 1), next: () => move(lib.idx + 1) };
+}
+
+let currentTab = "today", keyNav = null, libKeys = null;
+document.addEventListener("keydown", e => {
+  if (e.target.closest && e.target.closest("input, select, textarea")) return;
+  const nav = currentTab === "today" ? keyNav : currentTab === "library" ? libKeys : null;
+  if (nav && e.key === "ArrowLeft") { e.preventDefault(); nav.prev(); }
+  if (nav && e.key === "ArrowRight") { e.preventDefault(); nav.next(); }
+  if (e.key === " " && !(e.target.closest && e.target.closest("button, #packet"))) {
+    const pk = document.querySelector(`#panel-${currentTab} #packet`);
+    if (pk) { e.preventDefault(); pk.click(); }
+  }
+});
 
 function renderCalendar() {
   const el = document.getElementById("panel-calendar");
@@ -664,10 +763,11 @@ function renderRibbons() {
 
 function selectTab(name) {
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
-  ["today", "calendar", "ribbons"].forEach(n => document.getElementById("panel-" + n).hidden = n !== name);
+  currentTab = name;
+  ["today", "calendar", "library", "ribbons"].forEach(n => document.getElementById("panel-" + n).hidden = n !== name);
   renderAll();
 }
-function renderAll() { renderFarm(); renderStats(); renderToday(); renderCalendar(); renderRibbons(); }
+function renderAll() { renderFarm(); renderStats(); renderToday(); renderCalendar(); renderLibrary(); renderRibbons(); }
 
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => selectTab(b.dataset.tab));
 const sd = document.getElementById("startDate");
