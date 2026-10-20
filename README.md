@@ -4,7 +4,7 @@ A farm-themed study companion for *Principles of Management* (LibreTexts).
 
 - **8 weeks, 2 chapters a week.** Mon–Tue cover the first chapter, Wed–Thu the second, and Friday mixes both. Saturday is a Market Day quiz and Sunday is a fallow (rest) day.
 - **160 seed-packet flash cards.** Each card has an illustration, the textbook definition with its section number, and an "On the farm" example. Browse back and forth and flip as often as you like; the Card barn tab lets you flip through every card, filtered by week or shuffled.
-- **You decide when a day is done.** Press "Mark today complete" to log the lesson and earn bushels.
+- **You decide when a day is done, and you can work ahead.** Press "Mark lesson complete" to log a lesson, then "Keep going" to jump to the next unfinished one.
 - **Milestones.** Each finished week (all five lessons, plus 80% or better on Market Day) builds something on your farm: a barn, hens, a tractor, a silo, cows, beehives, an orchard, and finally the farmhouse. You also earn ribbons for streaks, cards harvested, perfect quizzes and greenhouse reviews.
 
 ## Files

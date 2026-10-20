@@ -127,6 +127,7 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
 .complete svg { width: 56px; height: 56px; }
 .complete b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; display: block; }
 .complete span { color: var(--muted); font-size: .9rem; }
+.complete-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .linkish { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 4px; }
 .libbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
 .libbar select { font: inherit; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; background: var(--paper); color: var(--ink); }
@@ -198,7 +199,7 @@ nav.tabs button[aria-selected="true"] { background: var(--paper); color: var(--i
   .opts { grid-template-columns: minmax(0,1fr); }
   .complete { grid-template-columns: 44px minmax(0, 1fr); }
   .complete svg { width: 44px; height: 44px; }
-  .complete .btn, .complete .linkish { grid-column: 1 / -1; }
+  .complete .btn, .complete .linkish, .complete-actions { grid-column: 1 / -1; justify-content: flex-start; }
   .cardnav .btn { padding-inline: 10px; }
   .packet-inner { min-height: 470px; }
   .farm-cap { font-size: .68rem; left: 8px; bottom: 6px; padding: 2px 8px; }
@@ -331,6 +332,21 @@ function dayInfo(i) {
   if (dow === 5) return { i, w, dow, kind: "market", week };
   return { i, w, dow, kind: "rest", week };
 }
+function nextOpenDay(from) {
+  for (let i = from + 1; i < TOTAL_DAYS; i++) {
+    const d = dayInfo(i);
+    if (d.kind === "lesson" && !state.lessonsDone[i]) return i;
+    if (d.kind === "market" && state.market[d.w] == null) return i;
+  }
+  return -1;
+}
+function keepGoingHTML(from) {
+  const n = nextOpenDay(from);
+  if (n < 0) return "";
+  const d = dayInfo(n);
+  const label = d.kind === "lesson" ? d.lesson.title : `Market Day: ${d.week.title}`;
+  return `<button class="btn primary" id="keepGoing" data-to="${n}">Keep going: ${esc(label)} →</button>`;
+}
 function allCards() { return WEEKS.flatMap(w => w.days.flatMap(d => d.cards)); }
 
 /* ================= State + storage ================= */
@@ -402,6 +418,8 @@ const RIBBONS = [
   { id: "sprout", title: "First Sprout", desc: "Finish your first day of cards.", color: "#4f9a55", test: () => Object.keys(state.lessonsDone).length >= 1 },
   ...WEEKS.map((wk, w) => ({ id: "week" + w, title: wk.build, desc: `Complete week ${w + 1}: ${wk.title}.`, color: w === 3 ? "#c98a12" : w === WEEKS.length - 1 ? "#2b5fa8" : "#b3372c", test: () => weekComplete(w) })),
   { id: "halfway", title: "Halfway Harvest", desc: "Finish four full weeks. The silo is half full.", color: "#c98a12", test: () => [0,1,2,3].every(weekComplete) },
+  { id: "early", title: "Early Riser", desc: "Finish a lesson before its scheduled day.", color: "#f4c542", test: () => Object.entries(state.lessonsDone).some(([i, d]) => d < iso(addDays(parseISO(state.start), Number(i)))) },
+  { id: "double", title: "Double Shift", desc: "Finish two or more lessons in one day.", color: "#b3372c", test: () => { const c = {}; return Object.values(state.lessonsDone).some(d => (c[d] = (c[d] || 0) + 1) >= 2); } },
   { id: "streak3", title: "Three Days of Rain", desc: "Study three days in a row.", color: "#3a7fb0", test: () => bestStreak() >= 3 },
   { id: "streak7", title: "Week of Sunshine", desc: "Study seven days in a row.", color: "#e0a526", test: () => bestStreak() >= 7 },
   { id: "streak21", title: "Steady Hand at the Plough", desc: "Study 21 days in a row.", color: "#6a4930", test: () => bestStreak() >= 21 },
@@ -471,8 +489,9 @@ function renderToday() {
   const date = addDays(parseISO(state.start), view.day);
   const isToday = view.day === todayIndex();
   let status = "";
-  if (info.kind === "lesson" && state.lessonsDone[view.day]) status = `<span class="chip done">Completed ✓</span>`;
-  if (info.kind === "market" && state.market[info.w] != null) status = `<span class="chip done">Market score ${state.market[info.w]}%</span>`;
+  if (view.day > todayIndex()) status += `<span class="chip market">Working ahead</span>`;
+  if (info.kind === "lesson" && state.lessonsDone[view.day]) status += `<span class="chip done">Completed ✓</span>`;
+  if (info.kind === "market" && state.market[info.w] != null) status += `<span class="chip done">Market score ${state.market[info.w]}%</span>`;
   const head = `
     <div class="lesson-head">
       <div class="when"><span class="eyebrow">Week ${info.w + 1} · ${DAY_NAMES[info.dow]} ${fmt(date)}${isToday ? " · today" : ""}</span>${status}</div>
@@ -518,8 +537,8 @@ function lessonHTML(info) {
   const doneOn = state.lessonsDone[view.day];
   const known = cards.filter(x => state.cards[x.id] === "known").length;
   const complete = doneOn
-    ? `<div class="complete done">${art("basket")}<div><b>Lesson complete</b><span>You marked this day done on ${fmt(parseISO(doneOn))}. Keep flipping as much as you like.</span></div><button class="linkish" id="undoDone">Undo</button></div>`
-    : `<div class="complete">${art("seedling")}<div><b>Finished today's lesson?</b><span>Flip the cards as many times as you want, then mark the day done to earn 20 bushels.</span></div><button class="btn primary" id="markDone">Mark today complete</button></div>`;
+    ? `<div class="complete done">${art("basket")}<div><b>Lesson complete</b><span>You marked this lesson done on ${fmt(parseISO(doneOn))}. Feeling eager? Go straight on to the next one.</span></div><div class="complete-actions">${keepGoingHTML(view.day)}<button class="linkish" id="undoDone">Undo</button></div></div>`
+    : `<div class="complete">${art("seedling")}<div><b>Finished this lesson?</b><span>Flip the cards as many times as you want, then mark it done to earn 20 bushels. You can work ahead as far as you like.</span></div><button class="btn primary" id="markDone">Mark lesson complete</button></div>`;
   return `${cardHTML(c, view.flipped, `${info.lesson.chapter} · card ${view.card + 1} of ${cards.length}`)}
     ${navHTML(cards, view.card)}
     <div class="rate">
@@ -545,7 +564,7 @@ function marketHTML(info) {
     return `<div class="done-card">${art("ribbon", pct === 100 ? "#2b5fa8" : pct >= 80 ? "#b3372c" : "#c98a12")}
       <h2>${pct === 100 ? "Blue ribbon!" : pct >= 80 ? "Red ribbon. Strong showing." : "Back to the field"}</h2>
       <p>You sold ${q.right} of ${q.items.length} crates at market (${pct}%). ${state.market[info.w] != null ? `Best score this week: ${state.market[info.w]}%.` : ""}</p>
-      <div class="rate"><button class="btn" id="retryQuiz">Run the market again</button></div></div>`;
+      <div class="rate"><button class="btn" id="retryQuiz">Run the market again</button>${state.market[info.w] != null ? keepGoingHTML(view.day) : ""}</div></div>`;
   }
   const it = q.items[q.idx];
   return `<div class="quiz">
@@ -569,6 +588,7 @@ function restHTML(info) {
     <h2>Let the field rest</h2>
     <p>Fallow days keep the soil rich. Take the day off, or tend the greenhouse if any cards are still growing.</p>
     ${next ? `<p><b>Coming up in week ${info.w + 2}:</b> ${esc(next.title)} (${esc(next.chapters)}). You'll build: ${esc(next.build)}.</p>` : `<p>That's the end of the season. Check your ribbons.</p>`}
+    <div class="rate">${keepGoingHTML(view.day)}</div>
   </div>`;
 }
 function greenhouseHTML() {
@@ -592,7 +612,7 @@ function sideHTML(info) {
     ? `<ol><li>Skim your notes from this week (10 min).</li><li>Take the Market Day quiz (10 min).</li><li>Score 80% or more to earn the week's build.</li></ol>`
     : `<ul><li>Rest day. No new cards.</li><li>Optional: clear the greenhouse.</li></ul>`;
   return `
-    <div class="box"><h3>Today's chores</h3>${plan}</div>
+    <div class="box"><h3>${view.day > todayIndex() ? "Chores (working ahead)" : "Today's chores"}</h3>${plan}</div>
     <div class="box"><h3>This week's build</h3><div style="display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center">${art(BUILDS[info.w + 1].key)}<div><b>${esc(info.week.build)}</b><p class="small">Finish all five lesson days and the Market Day quiz with 80% or better.</p></div></div></div>
     <div class="box"><h3>Greenhouse</h3><p class="small">${growing ? `${growing} card${growing === 1 ? " is" : "s are"} still growing. A quick review turns them into harvest.` : "No cards are waiting for review."}</p><button class="btn" id="openGreenhouse" ${growing ? "" : "disabled"}>Tend the greenhouse</button></div>`;
 }
@@ -629,6 +649,7 @@ function wireToday(info) {
   };
   if ($("leaveGreenhouse")) $("leaveGreenhouse").onclick = () => { view.mode = "lesson"; view.greenhouse = null; view.flipped = false; renderToday(); };
   document.querySelectorAll(".opt").forEach(b => b.onclick = () => answer(Number(b.dataset.k), info));
+  if ($("keepGoing")) $("keepGoing").onclick = () => { go(Number($("keepGoing").dataset.to)); window.scrollTo({ top: document.getElementById("panel-today").offsetTop - 20, behavior: "smooth" }); };
   if ($("retryQuiz")) $("retryQuiz").onclick = () => { view.quiz = null; renderToday(); };
 }
 
