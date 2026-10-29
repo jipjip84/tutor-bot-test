@@ -2,7 +2,7 @@
 
 A clickable prototype of OC Connect, an AI-first employee hub for Okanagan College. It is one HTML file with fictional example data.
 
-The styling follows Okanagan College branding: OC red (cherry) for actions, Cabernet for headings and the sidebar, and Modern Era where it is installed (Hanken Grotesk otherwise). The colour hex values are approximations; replace the tokens at the top of `index.html` with the exact values from the brand guidelines.
+The styling follows the Okanagan College brand guidelines (2024). It uses the primary colours Cherry `#E10054`, Cabernet `#782434` and Charcoal `#50534C`, with Lake, Sky, Lavender, Lilac, Sunset and Peach for status and the assistant. Headlines are in Modern Era (Google alternative: Poppins) and subheads in Alverata (Google alternative: Noto Serif). The sidebar shows the OC icon in its reversed white version, taken from the guidelines. Check with College Relations before any public use of the logo.
 
 - **Work queue:** four tabs. *Needs you* holds approvals, tickets waiting on your reply and policies to acknowledge. *Waiting on others* shows your pending requests, unpaid claims and open tickets, with who has each one and for how long. *Past* lists finished requests and resolved tickets. *Activity log* records everything, grouped by day. Use *New request* to open a ticket with IT, Facilities, People Ops or Finance.
 - **Connect:** Home ("Needs you", who's out, events, AI catch-up), News (posts, required acknowledgements, kudos) and People (search by name, city or skill).
