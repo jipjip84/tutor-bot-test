@@ -228,6 +228,20 @@ td.r,th.r{text-align:right}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);
   padding:10px 16px;border-radius:10px;font-size:.92rem;box-shadow:var(--shadow);max-width:calc(100vw - 32px)}
 
+/* Work queue */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--ink-2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--cabernet);border-bottom-color:var(--accent)}
+.tcount{display:inline-block;min-width:20px;padding:0 6px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font-size:.74rem;text-align:center;margin-left:4px}
+.qrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qrow > .grow{flex:1;min-width:min(100%,220px)}
+.qkind{flex:none;width:78px;font-size:.7rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.thread{display:flex;flex-direction:column;gap:14px;padding:14px;background:var(--sunk);border-radius:8px}
+.pill.resolved{background:var(--good-soft);color:var(--good)}
+.pill.needs{background:var(--accent-soft);color:var(--accent)}
+.day-group{display:flex;flex-direction:column;gap:8px}
+.day-group + .day-group{margin-top:10px}
 svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 @media (max-width:900px){
@@ -295,6 +309,7 @@ svg.i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stro
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 13l2.5-8h11L20 13v6H4zM4 13h5l1 2h4l1-2h5"/></symbol>
   <symbol id="i-logo" viewBox="0 0 24 24"><path d="M5 12a7 7 0 0 1 14 0M8 12a4 4 0 0 1 8 0M12 12v8"/></symbol>
 </svg>
 
@@ -335,9 +350,10 @@ const CATS = ["Meals","Travel","Lodging","Software","Equipment","Training","Rese
 const POLICY = {mealCap:75, receiptOver:25, approver:"Your manager approves claims; Finance pays approved claims in the next Friday payment run."};
 
 function seed(){
+  const at = (n, t) => addDays(todayIso, n) + "T" + t;
   const ann = addDays(todayIso, 5).slice(5);
   return {
-    v: 1, role: "manager",
+    v: 2, role: "manager",
     people: [
       {id:"me", name:"Sam Rivera", title:"Design Lead", dept:"Product Design", loc:"Toronto", mgr:"dana", start:"2021-03-15", email:"sam.rivera@example.com", phone:"+1 416 555 0142", skills:["Design systems","Facilitation","Figma"], status:"Active"},
       {id:"dana", name:"Dana Okafor", title:"VP, Product", dept:"Product", loc:"Toronto", mgr:"elena", start:"2019-06-03", email:"dana.okafor@example.com", skills:["Roadmapping","Pricing"], status:"Active"},
@@ -375,6 +391,7 @@ function seed(){
       {id:"L-201", type:"vacation", start:wd(-38), end:wd(-34), status:"approved", note:"Family trip"},
       {id:"L-214", type:"vacation", start:wd(15), end:wd(19), status:"approved", note:"Lisbon"},
       {id:"L-216", type:"sick", start:wd(-12), end:wd(-12), status:"approved", note:""},
+      {id:"L-218", type:"personal", start:wd(25), end:wd(25), status:"pending", note:"Convocation", submitted:addDays(todayIso,-1)},
     ],
     expenses: [
       {id:"EX-1042", date:addDays(todayIso,-3), merchant:"Café Belém", category:"Meals", amount:64.20, status:"submitted", note:"Lunch with Northwind research participants", receipt:"belem.jpg"},
@@ -398,17 +415,53 @@ function seed(){
     ],
     profile: {preferred:"Sam", pronouns:"", phone:"+1 416 555 0142", loc:"Toronto", pattern:"Hybrid · in office Tue–Thu", tz:"America/Toronto", bio:"", emName:"", emPhone:""},
     budget: {quarter:6000, spentBefore:3420},
+    tickets: [
+      {id:"IT-4471", team:"IT", subject:"Laptop refresh: swap my 2021 laptop", status:"needs-info", assignee:"olu", opened:addDays(todayIso,-5), updated:addDays(todayIso,-3), history:[
+        {at:at(-5,"10:14"), who:"me", text:"My laptop is from 2021 and the battery lasts about an hour. Can I book a swap?"},
+        {at:at(-3,"15:45"), who:"olu", text:"Thanks Sam. I can do Tuesday at 10:00 or Wednesday at 2:30 at the IT desk. Which works for you?"}]},
+      {id:"IT-4490", team:"IT", subject:"Figma seat for a contract designer", status:"in-progress", assignee:"olu", opened:addDays(todayIso,-2), updated:addDays(todayIso,-1), history:[
+        {at:at(-2,"09:30"), who:"me", text:"A contract designer starts next month and needs one Figma editor seat."},
+        {at:at(-1,"11:20"), who:"olu", text:"Sent to procurement. I'll update this ticket when the seat is assigned."}]},
+      {id:"FAC-2093", team:"Facilities", subject:"Projector in room E-214 flickers", status:"resolved", assignee:null, opened:addDays(todayIso,-11), updated:addDays(todayIso,-8), history:[
+        {at:at(-11,"13:40"), who:"me", text:"The projector in E-214 flickers every few minutes during workshops."},
+        {at:at(-8,"13:00"), who:"Facilities", text:"Replaced the lamp and HDMI cable. Let us know if it happens again."}]},
+      {id:"PPL-1180", team:"People Ops", subject:"Update my benefits beneficiary", status:"resolved", assignee:"priya", opened:addDays(todayIso,-44), updated:addDays(todayIso,-41), history:[
+        {at:at(-44,"11:05"), who:"me", text:"I'd like to change the beneficiary on my life insurance."},
+        {at:at(-41,"09:20"), who:"priya", text:"Done. The confirmation letter is in your inbox."}]},
+      {id:"FIN-0877", team:"Finance", subject:"August mileage claim not paid", status:"resolved", assignee:"sofia", opened:addDays(todayIso,-60), updated:addDays(todayIso,-57), history:[
+        {at:at(-60,"16:10"), who:"me", text:"My August mileage claim was approved but hasn't been paid."},
+        {at:at(-57,"10:00"), who:"sofia", text:"It missed the payment run. It's included in Friday's payment."}]},
+    ],
+    activity: [
+      {at:at(0,"09:12"), who:"marcus", text:"requested a personal day", scope:"team", ref:"R-311"},
+      {at:at(0,"08:40"), who:"aisha", text:"logged sick days", scope:"team", ref:"R-305"},
+      {at:at(-1,"16:05"), who:"priya", text:"posted “New travel and expense policy starts November 1”", scope:"company", ref:""},
+      {at:at(-1,"14:30"), who:"lena", text:"requested vacation", scope:"team", ref:"R-310"},
+      {at:at(-1,"11:20"), who:"olu", text:"updated your ticket: sent to procurement", scope:"mine", ref:"IT-4490"},
+      {at:at(-1,"11:02"), who:"tomas", text:"submitted a $189.99 equipment claim", scope:"team", ref:"R-313"},
+      {at:at(-1,"09:05"), who:"me", text:"requested a personal day", scope:"mine", ref:"L-218"},
+      {at:at(-2,"10:15"), who:"aisha", text:"submitted a $300.00 research claim", scope:"team", ref:"R-312"},
+      {at:at(-2,"09:30"), who:"me", text:"opened a ticket: Figma seat for a contract designer", scope:"mine", ref:"IT-4490"},
+      {at:at(-3,"15:45"), who:"olu", text:"asked you a question on your ticket", scope:"mine", ref:"IT-4471"},
+      {at:at(-3,"15:20"), who:"me", text:"submitted a $64.20 claim at Café Belém", scope:"mine", ref:"EX-1042"},
+      {at:at(-5,"10:14"), who:"me", text:"opened a ticket: Laptop refresh", scope:"mine", ref:"IT-4471"},
+      {at:at(-8,"13:00"), who:"Facilities", text:"resolved your ticket: Projector in room E-214", scope:"mine", ref:"FAC-2093"},
+      {at:at(-14,"10:00"), who:"me", text:"approved Tomás Silva's vacation", scope:"team", ref:"R-302"},
+      {at:at(-18,"16:30"), who:"dana", text:"approved your vacation", scope:"mine", ref:"L-214"},
+      {at:at(-21,"12:00"), who:"dana", text:"approved your $899.00 claim", scope:"mine", ref:"EX-1038"},
+      {at:at(-24,"09:00"), who:"sofia", text:"paid your $38.50 claim", scope:"mine", ref:"EX-1031"},
+    ],
   };
 }
 
 const KEY = "oc-connect-prototype-v1";
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ S = null; }
-if (!S || S.v !== 1) S = seed();
+if (!S || S.v !== 2) S = seed();
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
 
 /* ---------- Helpers ---------- */
-const P = id => S.people.find(p => p.id === id) || {name:"Someone", id, title:"", dept:""};
+const P = id => S.people.find(p => p.id === id) || {name:String(id || "Someone"), id:String(id), title:"", dept:"", skills:[]};
 const isMgr = () => S.role === "manager";
 const reports = () => S.people.filter(p => p.mgr === "me");
 const initials = n => n.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase();
@@ -446,24 +499,26 @@ function closeModal(){ const m = document.getElementById("modal"); m.hidden = tr
 
 /* ---------- Navigation ---------- */
 const NAV = [
-  {group:"Connect", items:[["home","Home","home"],["news","News","news"],["people","People","people"]]},
+  {group:null, items:[["home","Home","home"],["queue","Work queue","inbox"]]},
+  {group:"Connect", items:[["news","News","news"],["people","People","people"]]},
   {group:"Me", items:[["time-off","Time off","cal"],["expenses","Expenses","receipt"],["profile","Profile","user"]]},
-  {group:"My team", mgr:true, items:[["team","Team","team"],["approvals","Approvals","check"]]},
+  {group:"My team", mgr:true, items:[["team","Team","team"]]},
 ];
 const route = () => {
-  const r = (location.hash || "#home").slice(1);
+  let r = (location.hash || "#home").slice(1);
+  if (r === "approvals") r = "queue";
   const known = NAV.flatMap(g => g.items.map(i => i[0]));
   if (!known.includes(r)) return "home";
-  if ((r === "team" || r === "approvals") && !isMgr()) return "home";
+  if (r === "team" && !isMgr()) return "home";
   return r;
 };
 function renderRail(){
   const r = route();
-  const counts = {approvals: pendingReqs().length, news: unacked().length};
+  const counts = {queue: needsMe().length, news: unacked().length};
   document.getElementById("rail").innerHTML = `
     <div class="brand"><span class="brand-mark">OC</span>Connect</div>
     ${NAV.filter(g => !g.mgr || isMgr()).map(g => `
-      <div class="navgroup"><div class="label">${g.group}</div>
+      <div class="navgroup">${g.group ? `<div class="label">${g.group}</div>` : ""}
         ${g.items.map(([id,label,ic]) => `<a class="navlink" href="#${id}" ${r===id?'aria-current="page"':""}>${ico(ic)}${label}${counts[id] ? `<span class="count">${counts[id]}</span>` : ""}</a>`).join("")}
       </div>`).join("")}
     <div class="rail-foot">
@@ -482,7 +537,8 @@ function greeting(){ const h = new Date().getHours(); return h < 12 ? "Good morn
 
 function vHome(){
   const needs = [];
-  if (isMgr() && pendingReqs().length) needs.push({t:`${pendingReqs().length} requests from your team need a decision`, s:"Time off and expense claims", href:"#approvals", cta:"Review"});
+  if (isMgr() && pendingReqs().length) needs.push({t:`${pendingReqs().length} requests from your team need a decision`, s:"Time off and expense claims", href:"#queue", cta:"Review"});
+  S.tickets.filter(t => t.status === "needs-info").forEach(t => needs.push({t:`${P(t.assignee).name} needs your reply on ${t.id}`, s:t.subject, href:"#queue", cta:"Reply"}));
   unacked().forEach(n => needs.push({t:n.title, s:`${P(n.author).name} asked everyone to acknowledge this`, href:"#news", cta:"Read"}));
   if (isMgr()){ const k = S.onboarding.filter(o => !o.done && o.owner === "You").length; if (k) needs.push({t:`${k} onboarding steps left for Kai Nakamura`, s:`Kai starts ${fmtDay(P("kai").start)}`, href:"#team", cta:"Open", info:true}); }
   if (profileScore() < 100) needs.push({t:`Your profile is ${profileScore()}% complete`, s:"Add pronouns, a short bio and an emergency contact", href:"#profile", cta:"Finish", info:true});
@@ -496,7 +552,7 @@ function vHome(){
     <div class="row"><svg class="i spark-ico"><use href="#i-spark"/></svg><h2>What do you need?</h2></div>
     <form id="heroAsk"><input type="text" id="heroInput" placeholder="Book Friday off, claim a $42 taxi, who knows Terraform…" autocomplete="off" aria-label="Ask Connect"><button class="btn ai" type="submit">Ask</button></form>
     <div class="suggest">
-      ${["Book next Friday off","Claim a $42 taxi from yesterday","Who's out this week?","Who knows Terraform?", isMgr() ? "What needs my approval?" : "What's the meal limit?"].map(s => `<button data-act="suggest" data-q="${esc(s)}">${esc(s)}</button>`).join("")}
+      ${["Book next Friday off","Claim a $42 taxi from yesterday","Where's my expense claim?","The projector in E-214 is broken", isMgr() ? "What needs my approval?" : "What's the meal limit?"].map(s => `<button data-act="suggest" data-q="${esc(s)}">${esc(s)}</button>`).join("")}
     </div>
   </section>
 
@@ -579,7 +635,7 @@ function openPerson(id){
   `, m => {
     const f = m.querySelector("#kudosForm");
     f && f.addEventListener("submit", e => { e.preventDefault(); const msg = m.querySelector("#kudosMsg").value.trim(); if (!msg) return;
-      S.kudos.unshift({id:uid("k"), from:"me", to:id, date:todayIso, msg}); save(); closeModal(); toast(`Kudos sent to ${p.name}`); render(); });
+      S.kudos.unshift({id:uid("k"), from:"me", to:id, date:todayIso, msg}); log(`gave kudos to ${p.name}`, {scope:"company"}); save(); closeModal(); toast(`Kudos sent to ${p.name}`); render(); });
   });
 }
 
@@ -622,7 +678,8 @@ function submitLeave(type, start, end, note){
   if (!n || end < start) return "Pick working days, with the last day on or after the first.";
   if (left(type) - n < 0) return `You only have ${left(type)} ${LEAVE[type].label.toLowerCase()} days left.`;
   const id = "L-" + (220 + S.myLeave.length);
-  S.myLeave.push({id, type, start, end, status:"pending", note:note||""}); save();
+  S.myLeave.push({id, type, start, end, status:"pending", note:note||"", submitted:todayIso});
+  log(`requested ${LEAVE[type].label.toLowerCase()}, ${fmtRange(start,end)}`, {ref:id}); save();
   toast(`Request sent to ${P(P("me").mgr).name}`); render();
   return null;
 }
@@ -677,7 +734,7 @@ function submitExpense(x){
   if (!x.merchant || !(x.amount > 0)) return "Add a merchant and an amount.";
   const id = "EX-" + (1043 + S.expenses.length);
   S.expenses.unshift({id, date:x.date||todayIso, merchant:x.merchant, category:CATS.includes(x.category)?x.category:"Other", amount:Math.round(x.amount*100)/100, status:"submitted", note:x.note||"", receipt:x.receipt||""});
-  save(); toast(`Claim ${id} sent to ${P(P("me").mgr).name}`); render(); return null;
+  log(`submitted a ${money(x.amount)} claim at ${x.merchant}`, {ref:id}); save(); toast(`Claim ${id} sent to ${P(P("me").mgr).name}`); render(); return null;
 }
 
 function vProfile(){
@@ -749,45 +806,142 @@ function vTeam(){
   </div>`;
 }
 
-let apprTab = "all";
-function vApprovals(){
-  const pend = pendingReqs().filter(r => apprTab === "all" || r.kind === apprTab);
-  const done = S.requests.filter(r => r.status !== "pending").slice(0, 6);
-  const card = r => {
-    const who = P(r.person);
-    let detail, flags = "";
-    if (r.kind === "leave"){
-      const n = workdays(r.start, r.end);
-      detail = `<b>${LEAVE[r.type].label}</b> · ${fmtRange(r.start,r.end)} · ${n} day${n===1?"":"s"}`;
-      const clash = outBetween(r.start, r.end, r.person).filter(e => e.status === "approved");
-      if (clash.length) flags = `<div class="hint warn">Also out: ${clash.map(e => esc(e.person==="me"?"You":P(e.person).name) + " (" + fmtRange(e.start,e.end) + ")").join(", ")}</div>`;
-    } else {
-      detail = `<b>${money(r.amount)}</b> · ${esc(r.category)} · ${esc(r.merchant)}`;
-      if (r.category === "Equipment") flags = `<div class="hint">Equipment over $150 usually goes through IT. Tomás says IT has no stock.</div>`;
-    }
-    return `<section class="panel" id="req-${r.id}">
-      <div class="row">${av(r.person)}<div class="grow"><b>${esc(who.name)}</b><div class="faint">${r.kind === "leave" ? "Time off" : "Expense claim"} · sent ${fmt(r.submitted)}</div></div><span class="mono faint">${r.id}</span></div>
-      <div>${detail}</div>${r.note ? `<div class="muted">“${esc(r.note)}”</div>` : ""}${flags}
-      <div class="row" data-decide="${r.id}"><button class="btn primary sm" data-act="approve" data-id="${r.id}">Approve</button><button class="btn sm" data-act="decline" data-id="${r.id}">Decline</button></div>
-    </section>`;
-  };
-  return `
-  <div class="page-head"><div><h1>Approvals</h1><p class="muted">${pendingReqs().length ? `${pendingReqs().length} waiting for you` : "Nothing waiting for you."}</p></div>
-    ${pendingReqs().length ? `<button class="btn" data-act="suggest" data-q="Summarize what needs my approval and flag anything unusual">${ico("spark")}Summarize for me</button>` : ""}</div>
-  <div class="chips">${[["all","All"],["leave","Time off"],["expense","Expenses"]].map(([k,l]) => `<button class="chip" data-act="tab" data-k="${k}" aria-pressed="${apprTab===k}">${l}</button>`).join("")}</div>
-  ${pend.length ? `<div class="cols">${pend.map(card).join("")}</div>` : `<section class="panel"><p class="muted">You're all caught up.</p></section>`}
-  <section class="panel"><h2>Recently decided</h2>
-    <div class="list">${done.map(r => `<div class="row">${av(r.person,"sm")}<div class="grow">${esc(P(r.person).name)} · ${r.kind==="leave" ? `${LEAVE[r.type].label}, ${fmtRange(r.start,r.end)}` : `${money(r.amount)} ${esc(r.category)}`}${r.reason ? `<div class="faint">${esc(r.reason)}</div>` : ""}</div>${pill(r.status)}</div>`).join("")}</div>
+/* ---------- Work queue ---------- */
+let qTab = "needs", pastFilter = "all", actFilter = "all";
+const KIND = {leave:"Time off", expense:"Expense", ticket:"Ticket", approval:"Approval", ack:"Policy", reply:"Ticket"};
+const TSTATUS = {open:["pending","Open"], "in-progress":["pending","In progress"], "needs-info":["needs","Needs your reply"], resolved:["resolved","Resolved"]};
+const TPFX = {IT:"IT", Facilities:"FAC", "People Ops":"PPL", Finance:"FIN"};
+const daysAgo = s => Math.round((TODAY - parse(s.slice(0,10))) / DAY);
+const age = s => { const n = daysAgo(s); return n <= 0 ? "since today" : n === 1 ? "1 day" : n + " days"; };
+const whoName = w => w === "me" ? "You" : P(w).name;
+const nowAt = () => { const n = new Date(); return `${iso(n)}T${pad(n.getHours())}:${pad(n.getMinutes())}`; };
+const fmtTime = a => { const [h, m] = a.slice(11,16).split(":").map(Number); return `${(h % 12) || 12}:${pad(m)} ${h < 12 ? "am" : "pm"}`; };
+function log(text, o = {}){ S.activity.unshift({at:nowAt(), who:o.who || "me", text, scope:o.scope || "mine", ref:o.ref || ""}); S.activity = S.activity.slice(0, 300); }
+
+function needsMe(){
+  const items = [];
+  if (isMgr()) pendingReqs().forEach(r => items.push({kind:"approval", r, date:r.submitted}));
+  S.tickets.filter(t => t.status === "needs-info").forEach(t => items.push({kind:"reply", t, date:t.updated}));
+  unacked().forEach(n => items.push({kind:"ack", n, date:n.date}));
+  return items;
+}
+function waitingOn(){
+  const mgr = P("me").mgr, items = [];
+  S.myLeave.filter(l => l.status === "pending").forEach(l => items.push({kind:"leave", id:l.id, title:`${LEAVE[l.type].label}, ${fmtRange(l.start,l.end)}`, on:mgr, step:"Waiting for approval", date:l.submitted || todayIso}));
+  S.expenses.filter(e => e.status === "submitted").forEach(e => items.push({kind:"expense", id:e.id, title:`${money(e.amount)} · ${e.merchant}`, on:mgr, step:"Waiting for approval", date:e.date}));
+  S.expenses.filter(e => e.status === "approved").forEach(e => items.push({kind:"expense", id:e.id, title:`${money(e.amount)} · ${e.merchant}`, on:"sofia", step:"Approved, paid next Friday", date:e.date}));
+  S.tickets.filter(t => t.status === "open" || t.status === "in-progress").forEach(t => items.push({kind:"ticket", id:t.id, title:t.subject, on:t.assignee || t.team, step:TSTATUS[t.status][1], date:t.opened}));
+  return items.sort((a,b) => a.date < b.date ? -1 : 1);
+}
+function pastItems(){
+  const items = [];
+  S.myLeave.filter(l => l.status !== "pending").forEach(l => items.push({kind:"leave", id:l.id, title:`${LEAVE[l.type].label}, ${fmtRange(l.start,l.end)}`, status:l.status, date:l.decided || l.start}));
+  S.expenses.filter(e => e.status === "paid").forEach(e => items.push({kind:"expense", id:e.id, title:`${money(e.amount)} · ${e.merchant}`, status:"paid", date:e.date}));
+  S.tickets.filter(t => t.status === "resolved").forEach(t => items.push({kind:"ticket", id:t.id, title:`${t.team}: ${t.subject}`, status:"resolved", date:t.updated}));
+  if (isMgr()) S.requests.filter(r => r.status !== "pending").forEach(r => items.push({kind:"approval", id:r.id, title:`${P(r.person).name}: ${r.kind === "leave" ? LEAVE[r.type].label + ", " + fmtRange(r.start,r.end) : money(r.amount) + " " + r.category}`, status:r.status, date:r.decided || r.submitted, reason:r.reason}));
+  return items.sort((a,b) => a.date < b.date ? 1 : -1);
+}
+
+function approvalCard(r){
+  const who = P(r.person);
+  let detail, flags = "";
+  if (r.kind === "leave"){
+    const n = workdays(r.start, r.end);
+    detail = `<b>${LEAVE[r.type].label}</b> · ${fmtRange(r.start,r.end)} · ${n} day${n===1?"":"s"}`;
+    const clash = outBetween(r.start, r.end, r.person).filter(e => e.status === "approved");
+    if (clash.length) flags = `<div class="hint warn">Also out: ${clash.map(e => esc(e.person==="me"?"You":P(e.person).name) + " (" + fmtRange(e.start,e.end) + ")").join(", ")}</div>`;
+  } else {
+    detail = `<b>${money(r.amount)}</b> · ${esc(r.category)} · ${esc(r.merchant)}`;
+    if (r.category === "Equipment") flags = `<div class="hint">Equipment over $150 usually goes through IT. Tomás says IT has no stock.</div>`;
+  }
+  return `<section class="panel" id="req-${r.id}">
+    <div class="label">Needs your approval · ${age(r.submitted)}</div>
+    <div class="row">${av(r.person)}<div class="grow"><b>${esc(who.name)}</b><div class="faint">${r.kind === "leave" ? "Time off" : "Expense claim"} · sent ${fmt(r.submitted)}</div></div><span class="mono faint">${r.id}</span></div>
+    <div>${detail}</div>${r.note ? `<div class="muted">“${esc(r.note)}”</div>` : ""}${flags}
+    <div class="row" data-decide="${r.id}"><button class="btn primary sm" data-act="approve" data-id="${r.id}">Approve</button><button class="btn sm" data-act="decline" data-id="${r.id}">Decline</button></div>
   </section>`;
+}
+function needCard(it){
+  if (it.kind === "approval") return approvalCard(it.r);
+  if (it.kind === "reply"){ const t = it.t, last = t.history[t.history.length-1];
+    return `<section class="panel"><div class="label">Ticket needs your reply · ${age(t.updated)}</div>
+      <div class="row"><b class="grow">${esc(t.subject)}</b><span class="mono faint">${t.id}</span></div>
+      <div class="row" style="align-items:flex-start">${av(last.who,"sm")}<div class="grow muted">“${esc(last.text)}”</div></div>
+      <div class="row"><button class="btn primary sm" data-act="ticket" data-id="${t.id}">Reply</button></div></section>`; }
+  const n = it.n;
+  return `<section class="panel"><div class="label">Please acknowledge · ${age(n.date)}</div>
+    <div class="row">${av(n.author,"sm")}<b class="grow">${esc(n.title)}</b></div>
+    <p class="muted">${esc(n.body)}</p>
+    <div class="row"><button class="btn primary sm" data-act="ack" data-id="${n.id}">I've read it</button><a class="btn sm quiet" href="#news">Open in News</a></div></section>`;
+}
+function activityHtml(){
+  const f = S.activity.filter(a => actFilter === "all" || a.scope === actFilter).sort((a,b) => a.at < b.at ? 1 : -1);
+  const groups = {}; f.forEach(a => (groups[a.at.slice(0,10)] = groups[a.at.slice(0,10)] || []).push(a));
+  const dayName = d => d === todayIso ? "Today" : d === addDays(todayIso,-1) ? "Yesterday" : fmtDay(d);
+  const filters = [["all","Everything"],["mine","Mine"], ...(isMgr() ? [["team","My team"]] : []), ["company","Company"]];
+  return `<div class="chips">${filters.map(([k,l]) => `<button class="chip" data-act="actf" data-k="${k}" aria-pressed="${actFilter===k}">${l}</button>`).join("")}</div>
+  <section class="panel">${Object.keys(groups).map(d => `<div class="day-group"><div class="label">${dayName(d)}</div><div class="list">${groups[d].map(a => `
+    <div class="row">${av(a.who,"sm")}<div class="grow"><b>${esc(whoName(a.who))}</b> ${esc(a.text)}${a.ref ? ` <button class="linkbtn mono" style="color:var(--accent)" data-act="ref" data-id="${esc(a.ref)}">${esc(a.ref)}</button>` : ""}</div><span class="faint num">${fmtTime(a.at)}</span></div>`).join("")}</div></div>`).join("") || `<p class="muted">No activity yet.</p>`}</section>`;
+}
+function vQueue(){
+  const needs = needsMe(), wait = waitingOn(), past = pastItems();
+  const tabs = [["needs","Needs you",needs.length],["waiting","Waiting on others",wait.length],["past","Past",0],["activity","Activity log",0]];
+  let body = "";
+  if (qTab === "needs") body = needs.length ? `<div class="cols">${needs.map(needCard).join("")}</div>` : `<section class="panel"><p class="muted">Nothing needs you right now.</p></section>`;
+  if (qTab === "waiting") body = `<section class="panel">${wait.length ? `<div class="list">${wait.map(w => `
+    <div class="qrow"><span class="qkind">${KIND[w.kind]}</span><div class="grow"><b>${esc(w.title)}</b><div class="faint"><span class="mono">${w.id}</span> · ${esc(w.step)} · with ${esc(whoName(w.on))} · ${age(w.date)}</div></div>
+      <div class="row">${w.kind === "ticket" ? `<button class="btn sm" data-act="ticket" data-id="${w.id}">Open</button>` : ""}<button class="btn sm quiet" data-act="nudge" data-id="${w.id}" data-on="${esc(w.on)}">Send reminder</button></div></div>`).join("")}</div>` : `<p class="muted">You're not waiting on anyone.</p>`}</section>`;
+  if (qTab === "past"){
+    const f = past.filter(x => pastFilter === "all" || x.kind === pastFilter);
+    const filters = [["all","All"],["ticket","Tickets"],["leave","Time off"],["expense","Expenses"], ...(isMgr() ? [["approval","Your decisions"]] : [])];
+    body = `<div class="chips">${filters.map(([k,l]) => `<button class="chip" data-act="pastf" data-k="${k}" aria-pressed="${pastFilter===k}">${l}</button>`).join("")}</div>
+    <section class="panel">${f.length ? `<div class="list">${f.map(x => `<div class="qrow"><span class="qkind">${KIND[x.kind]}</span><div class="grow"><b>${esc(x.title)}</b><div class="faint"><span class="mono">${x.id}</span> · ${fmt(x.date)}${x.reason ? " · " + esc(x.reason) : ""}</div></div>${pill(x.status)}${x.kind === "ticket" ? `<button class="btn sm quiet" data-act="ticket" data-id="${x.id}">View</button>` : ""}</div>`).join("")}</div>` : `<p class="muted">Nothing here yet.</p>`}</section>`;
+  }
+  if (qTab === "activity") body = activityHtml();
+  return `
+  <div class="page-head"><div><h1>Work queue</h1><p class="muted">${needs.length ? `${needs.length} need${needs.length === 1 ? "s" : ""} you` : "Nothing needs you"} · ${wait.length} waiting on others</p></div>
+    <div class="row">${needs.length ? `<button class="btn" data-act="suggest" data-q="Go through my work queue and tell me what to do first, and flag anything unusual">${ico("spark")}What first?</button>` : ""}<button class="btn primary" data-act="new-ticket">${ico("plus")}New request</button></div></div>
+  <div class="tabs" role="tablist">${tabs.map(([k,l,n]) => `<button role="tab" data-act="qtab" data-k="${k}" aria-selected="${qTab===k}">${l}${n ? `<span class="tcount">${n}</span>` : ""}</button>`).join("")}</div>
+  ${body}`;
+}
+function openTicket(id){
+  const t = S.tickets.find(x => x.id === id); if (!t) return;
+  modal(`<div class="row" style="align-items:flex-start"><div class="grow"><div class="label">${esc(t.team)} · <span class="mono">${t.id}</span></div><h2>${esc(t.subject)}</h2></div><button class="btn quiet sm" data-act="close" aria-label="Close">${ico("x")}</button></div>
+    <div class="row">${pill(TSTATUS[t.status][0], TSTATUS[t.status][1])}<span class="faint">Opened ${fmt(t.opened)} · ${t.assignee ? "with " + esc(P(t.assignee).name) : "not assigned yet"}</span></div>
+    <div class="thread">${t.history.map(h => `<div class="row" style="align-items:flex-start">${av(h.who,"sm")}<div class="grow"><b>${esc(whoName(h.who))}</b> <span class="faint">${fmt(h.at.slice(0,10))}, ${fmtTime(h.at)}</span><div>${esc(h.text)}</div></div></div>`).join("")}</div>
+    ${t.status !== "resolved" ? `<form id="tReply" class="stack"><label class="field"><span>Reply</span><textarea id="tReplyText" required></textarea></label>
+      <div class="row"><button class="btn primary" type="submit">Send reply</button><button class="btn quiet" type="button" data-act="ticket-close" data-id="${t.id}">Mark as resolved</button></div></form>` : ""}`,
+  m => { const f = m.querySelector("#tReply"); f && f.addEventListener("submit", e => { e.preventDefault(); const v = m.querySelector("#tReplyText").value.trim(); if (!v) return;
+    t.history.push({at:nowAt(), who:"me", text:v}); if (t.status === "needs-info") t.status = "in-progress"; t.updated = todayIso;
+    log("replied on a ticket", {ref:t.id}); save(); closeModal(); toast(`Reply sent to ${t.assignee ? P(t.assignee).name : t.team}`); render(); }); });
+}
+function newTicket(pre = {}){
+  modal(`<div class="row"><h2 class="grow">New request</h2><button class="btn quiet sm" data-act="close" aria-label="Close">${ico("x")}</button></div>
+    <form id="tNew" class="stack">
+      <label class="field"><span>Who can help?</span><select id="tTeam">${Object.keys(TPFX).map(x => `<option ${x === pre.team ? "selected" : ""}>${x}</option>`).join("")}</select></label>
+      <label class="field"><span>What do you need?</span><input type="text" id="tSubj" value="${esc(pre.subject || "")}" required></label>
+      <label class="field"><span>Details</span><textarea id="tBody">${esc(pre.details || "")}</textarea></label>
+      <div class="row"><button class="btn primary" type="submit">Send request</button><button class="btn quiet" type="button" data-act="close">Cancel</button></div>
+    </form>`, m => m.querySelector("#tNew").addEventListener("submit", e => { e.preventDefault();
+      const err = submitTicket(m.querySelector("#tTeam").value, m.querySelector("#tSubj").value.trim(), m.querySelector("#tBody").value.trim());
+      if (err) toast(err); else closeModal(); }));
+}
+function submitTicket(team, subject, details){
+  if (!subject) return "Say what you need first.";
+  if (!TPFX[team]) team = "IT";
+  const id = TPFX[team] + "-" + (4500 + S.tickets.length);
+  S.tickets.unshift({id, team, subject, status:"open", assignee:null, opened:todayIso, updated:todayIso, history:[{at:nowAt(), who:"me", text:details || subject}]});
+  log(`opened a ticket: ${subject}`, {ref:id}); save(); toast(`${id} sent to ${team}`); qTab = "waiting"; render(); return null;
 }
 function decide(id, decision, reason){
   const r = S.requests.find(x => x.id === id); if (!r || r.status !== "pending") return "That request was already decided.";
-  r.status = decision; r.reason = reason || ""; save();
+  r.status = decision; r.reason = reason || ""; r.decided = todayIso;
+  log(`${decision} ${P(r.person).name}'s ${r.kind === "leave" ? LEAVE[r.type].label.toLowerCase() : "claim"}`, {scope:"team", ref:id}); save();
   toast(`${decision === "approved" ? "Approved" : "Declined"}. ${P(r.person).name} has been notified.`); render(); return null;
 }
 
 /* ---------- Render + mount ---------- */
-const VIEWS = {home:vHome, news:vNews, people:vPeople, "time-off":vTimeOff, expenses:vExpenses, profile:vProfile, team:vTeam, approvals:vApprovals};
+const VIEWS = {home:vHome, queue:vQueue, news:vNews, people:vPeople, "time-off":vTimeOff, expenses:vExpenses, profile:vProfile, team:vTeam};
 function render(){
   const r = route();
   renderRail();
@@ -810,7 +964,7 @@ function mount(r){
       const t = document.getElementById("postTitle").value.trim(), b = document.getElementById("postBody").value.trim(); if (!t || !b) return;
       S.news.unshift({id:uid("n"), author:"me", date:todayIso, title:t, body:b, mustAck:false, r:{clap:0,heart:0,idea:0}, mine:null});
       if (/kai/i.test(t+b)) S.onboarding.find(o => o.id === "o5").done = true;
-      S.draftTitle = S.draftBody = ""; save(); toast("Posted to News"); render(); });
+      S.draftTitle = S.draftBody = ""; log(`posted “${t}”`, {scope:"company"}); save(); toast("Posted to News"); render(); });
   }
   if (r === "time-off"){
     const upd = () => { document.getElementById("lvSum").innerHTML = leaveSummary(lvType.value, lvStart.value, lvEnd.value); };
@@ -836,7 +990,7 @@ function mount(r){
   if (r === "profile"){
     document.getElementById("profileForm").addEventListener("submit", e => { e.preventDefault();
       Object.keys(S.profile).forEach(k => { const el = document.getElementById("pf-"+k); if (el) S.profile[k] = el.value.trim(); });
-      if (S.profile.loc) P("me").loc = S.profile.loc; save(); toast("Profile saved"); render(); });
+      if (S.profile.loc) P("me").loc = S.profile.loc; log("updated your profile"); save(); toast("Profile saved"); render(); });
     document.getElementById("newSkill").addEventListener("keydown", e => { if (e.key !== "Enter") return; e.preventDefault();
       const v = e.target.value.trim(); if (v && !P("me").skills.includes(v)){ P("me").skills.push(v); save(); stashProfile(); render(); document.getElementById("newSkill").focus(); } });
   }
@@ -853,7 +1007,7 @@ const ACT = {
   "ai-clear"(){ turns = []; aiLog.innerHTML = ""; greetAI(); },
   role(el){ S.role = el.dataset.role; save(); render(); toast(S.role === "manager" ? "Showing manager tools" : "Showing the employee view"); },
   reset(el){ if (el.dataset.armed){ S = seed(); save(); render(); toast("Example data reset"); return; } el.dataset.armed = "1"; el.textContent = "Click again to reset everything"; },
-  ack(el){ const n = S.news.find(x => x.id === el.dataset.id); n.acked = todayIso; save(); toast("Thanks, acknowledgement recorded"); render(); },
+  ack(el){ const n = S.news.find(x => x.id === el.dataset.id); n.acked = todayIso; log(`acknowledged “${n.title}”`); save(); toast("Thanks, acknowledgement recorded"); render(); },
   react(el){ const n = S.news.find(x => x.id === el.dataset.id); n.mine = n.mine === el.dataset.k ? null : el.dataset.k; save(); render(); },
   dept(el){ peopleDept = el.dataset.d; render(); },
   person(el, e){ e.preventDefault(); openPerson(el.dataset.id); },
@@ -861,16 +1015,26 @@ const ACT = {
   copy(el){ const v = el.dataset.v; const done = () => { el.textContent = "Copied"; };
     try { navigator.clipboard.writeText(v).then(done, () => selectText(el.previousElementSibling)); } catch(e){ selectText(el.previousElementSibling); } },
   "cancel-leave"(el){ if (!el.dataset.armed){ el.dataset.armed = "1"; el.textContent = "Confirm cancel"; return; }
-    S.myLeave.find(l => l.id === el.dataset.id).status = "cancelled"; save(); toast("Request cancelled"); render(); },
+    S.myLeave.find(l => l.id === el.dataset.id).status = "cancelled"; log("cancelled a time-off request", {ref:el.dataset.id}); save(); toast("Request cancelled"); render(); },
   "rm-skill"(el){ stashProfile(); P("me").skills.splice(Number(el.dataset.i), 1); save(); render(); },
-  tab(el){ apprTab = el.dataset.k; render(); },
+  qtab(el){ qTab = el.dataset.k; render(); },
+  pastf(el){ pastFilter = el.dataset.k; render(); },
+  actf(el){ actFilter = el.dataset.k; render(); },
+  ticket(el){ openTicket(el.dataset.id); },
+  "new-ticket"(){ newTicket(); },
+  "ticket-close"(el){ const t = S.tickets.find(x => x.id === el.dataset.id); t.status = "resolved"; t.updated = todayIso;
+    t.history.push({at:nowAt(), who:"me", text:"Marked as resolved."}); log("resolved a ticket", {ref:t.id}); save(); closeModal(); toast(`${t.id} resolved`); render(); },
+  nudge(el){ if (el.dataset.done) return; el.dataset.done = "1"; el.disabled = true; el.textContent = "Reminder sent";
+    log(`sent ${whoName(el.dataset.on)} a reminder`, {ref:el.dataset.id}); save(); toast(`Reminder sent to ${whoName(el.dataset.on)}`); },
+  ref(el){ const id = el.dataset.id; if (S.tickets.find(t => t.id === id)) return openTicket(id);
+    if (id.startsWith("EX-")) location.hash = "#expenses"; else if (id.startsWith("L-")) location.hash = "#time-off"; else if (isMgr()){ qTab = "past"; pastFilter = "approval"; location.hash = "#queue"; render(); } },
   approve(el){ decide(el.dataset.id, "approved"); },
   decline(el){ const box = document.querySelector(`[data-decide="${el.dataset.id}"]`);
     box.innerHTML = `<input type="text" id="why-${el.dataset.id}" placeholder="Reason (shared with them)" class="grow"><button class="btn sm danger" data-act="decline-go" data-id="${el.dataset.id}">Decline</button><button class="btn sm quiet" data-act="redraw">Back</button>`;
     document.getElementById("why-"+el.dataset.id).focus(); },
   "decline-go"(el){ const why = document.getElementById("why-"+el.dataset.id).value.trim(); if (!why){ toast("Add a short reason so they know what to change."); return; } decide(el.dataset.id, "declined", why); },
   redraw(){ render(); },
-  onb(el){ const o = S.onboarding.find(x => x.id === el.dataset.id); o.done = el.checked; save(); render(); },
+  onb(el){ const o = S.onboarding.find(x => x.id === el.dataset.id); o.done = el.checked; if (o.done) log(`completed “${o.t}” for Kai Nakamura`, {scope:"team"}); save(); render(); },
   welcome(){ openAI("Draft a short, warm welcome post for Kai Nakamura, our new Product Designer starting " + fmtDay(P("kai").start) + " in Vancouver."); },
   "add-member"(){ memberForm(); },
   "edit-member"(el){ memberForm(el.dataset.id); },
@@ -878,7 +1042,7 @@ const ACT = {
     modal(`<h2>Offboard ${esc(p.name)}</h2><p class="muted">People Ops and IT get a checklist for the last day: equipment return, account access and final pay.</p>
       <label class="field"><span>Last working day</span><input type="date" id="lastDay" value="${wd(10)}" min="${todayIso}"></label>
       <div class="row"><button class="btn danger" data-act="offboard-go" data-id="${p.id}">Start offboarding</button><button class="btn quiet" data-act="close">Cancel</button></div>`); },
-  "offboard-go"(el){ const p = P(el.dataset.id); p.status = "Leaving"; p.lastDay = document.getElementById("lastDay").value; save(); closeModal(); toast(`Offboarding started for ${p.name}`); render(); },
+  "offboard-go"(el){ const p = P(el.dataset.id); p.status = "Leaving"; p.lastDay = document.getElementById("lastDay").value; log(`started offboarding for ${p.name}`, {scope:"team"}); save(); closeModal(); toast(`Offboarding started for ${p.name}`); render(); },
   catchup(){ catchUp(); },
   "ai-polish"(){ polishPost(); },
   "ai-bio"(){ draftBio(); },
@@ -898,7 +1062,7 @@ function memberForm(id){
     </form>`, m => m.querySelector("#memForm").addEventListener("submit", e => { e.preventDefault();
       const g = s => m.querySelector(s)?.value.trim();
       if (id){ Object.assign(P(id), {name:g("#mName"), title:g("#mTitle"), loc:g("#mLoc")}); toast("Saved"); }
-      else { S.people.push({id:uid("p"), name:g("#mName"), title:g("#mTitle"), loc:g("#mLoc")||"—", email:g("#mEmail"), start:g("#mStart"), dept:"Product Design", mgr:"me", skills:[], status:"Invited"}); toast(`Invite sent to ${g("#mName")}`); }
+      else { S.people.push({id:uid("p"), name:g("#mName"), title:g("#mTitle"), loc:g("#mLoc")||"—", email:g("#mEmail"), start:g("#mStart"), dept:"Product Design", mgr:"me", skills:[], status:"Invited"}); log(`invited ${g("#mName")} to the team`, {scope:"team"}); toast(`Invite sent to ${g("#mName")}`); }
       save(); closeModal(); render(); }));
 }
 
@@ -953,12 +1117,18 @@ function snapshot(){
     outNext14Days: outBetween(todayIso, addDays(todayIso,13)).map(e => ({name:e.person==="me"?"You":P(e.person).name, start:e.start, end:e.end, status:e.status})),
     news: S.news.slice(0,4).map(n => ({title:n.title, by:P(n.author).name, mustAcknowledge:n.mustAck && !n.acked, body:n.body})),
     events: S.events.map(e => ({title:e.title, date:e.date, time:e.time})),
+    workQueue: {
+      needsYou: needsMe().map(i => i.kind === "approval" ? {type:"approval", id:i.r.id} : i.kind === "reply" ? {type:"ticket reply", id:i.t.id, subject:i.t.subject, lastMessage:i.t.history[i.t.history.length-1].text} : {type:"acknowledge", title:i.n.title}),
+      waitingOnOthers: waitingOn().map(w => ({id:w.id, what:w.title, step:w.step, with:whoName(w.on), since:w.date})),
+      recentlyFinished: pastItems().slice(0,8).map(x => ({id:x.id, what:x.title, status:x.status, date:x.date})),
+    },
+    recentActivity: S.activity.slice(0,12).map(a => ({at:a.at, who:whoName(a.who), did:a.text, ref:a.ref})),
     pendingApprovals: isMgr() ? pendingReqs().map(r => r.kind === "leave" ? {id:r.id, person:P(r.person).name, kind:"time off", type:r.type, start:r.start, end:r.end, workingDays:workdays(r.start,r.end), note:r.note}
       : {id:r.id, person:P(r.person).name, kind:"expense", amount:r.amount, category:r.category, merchant:r.merchant, note:r.note}) : "not a manager",
   };
 }
 const RULES = () => `You are Connect, the workplace assistant inside OC Connect, the company intranet. You are talking with ${P("me").name}. Keep replies short and plain: one to three sentences, or a short list. No markdown headings or bold.
-To book time off, start an expense claim, send kudos, decide an approval or draft a news post, call the matching propose_ tool. The tool shows the person an editable card that they confirm themselves, so never say something has been submitted, booked or approved; say you've prepared it for them to check.
+To book time off, start an expense claim, open a help request with IT, Facilities, People Ops or Finance, send kudos, decide an approval or draft a news post, call the matching propose_ tool. The work queue in the data shows what needs the person, what they are waiting on, and recent activity. The tool shows the person an editable card that they confirm themselves, so never say something has been submitted, booked or approved; say you've prepared it for them to check.
 Resolve relative dates like "next Friday" from today's date. Working days are Monday to Friday. Use only the data below; if something isn't there, say you don't know and suggest who to ask (People questions: Priya Natarajan; IT: Oluwaseun Bello; Finance: Sofia Márquez).
 DATA (JSON):
 ${JSON.stringify(snapshot())}`;
@@ -979,7 +1149,10 @@ const TOOLS = [
   {name:"propose_post", description:"Show a draft news post (title and body) that the person can move into the News composer.",
    inputSchema:{type:"object", properties:{title:{type:"string"}, body:{type:"string"}}, required:["title","body"]},
    execute:i => { proposal("post", {title:String(i.title), body:String(i.body)}); return "Draft shown."; }},
-  {name:"open_page", description:"Open a page of the intranet for the person.", inputSchema:{type:"object", properties:{page:{type:"string", enum:["home","news","people","time-off","expenses","profile","team","approvals"]}}, required:["page"]},
+  {name:"propose_ticket", description:"Show a help-request card (IT, Facilities, People Ops or Finance) for the person to review and send.",
+   inputSchema:{type:"object", properties:{team:{type:"string", enum:Object.keys(TPFX)}, subject:{type:"string"}, details:{type:"string"}}, required:["team","subject"]},
+   execute:i => { proposal("ticket", {team:String(i.team||"IT"), subject:String(i.subject||""), details:String(i.details||"")}); return "Card shown."; }},
+  {name:"open_page", description:"Open a page of the intranet for the person.", inputSchema:{type:"object", properties:{page:{type:"string", enum:["home","queue","news","people","time-off","expenses","profile","team"]}}, required:["page"]},
    execute:i => { const p = String(i.page); setTimeout(() => { location.hash = "#" + p; }, 400); return "Opened " + p; }},
 ];
 
@@ -1024,9 +1197,13 @@ function proposal(kind, d){
     decision: () => { const r = S.requests.find(x => x.id === d.id); return `<div class="label">${d.decision === "approved" ? "Approve" : "Decline"} ${esc(r.id)}</div>
       <div>${esc(P(r.person).name)} · ${r.kind === "leave" ? `${LEAVE[r.type].label}, ${fmtRange(r.start,r.end)}` : `${money(r.amount)} ${esc(r.category)}`}</div>
       ${d.decision === "declined" ? `<label class="field"><span>Reason (shared with them)</span><input type="text" data-f="reason" value="${esc(d.reason)}"></label>` : ""}`; },
+    ticket: () => `<div class="label">Help request</div>
+      <label class="field"><span>Who can help?</span><select data-f="team">${Object.keys(TPFX).map(x => `<option ${x===d.team?"selected":""}>${x}</option>`).join("")}</select></label>
+      <label class="field"><span>What do you need?</span><input type="text" data-f="subject" value="${esc(d.subject)}"></label>
+      <label class="field"><span>Details</span><textarea data-f="details">${esc(d.details)}</textarea></label>`,
     post: () => { drafts[id] = d; return `<div class="label">Draft post</div><b>${esc(d.title)}</b><div class="muted" style="white-space:pre-wrap">${esc(d.body)}</div>`; },
   }[kind]();
-  const cta = {leave:"Send request", expense:"Submit claim", kudos:"Send kudos", decision: d.decision === "approved" ? "Approve" : "Decline", post:"Use this draft"}[kind];
+  const cta = {leave:"Send request", ticket:"Send request", expense:"Submit claim", kudos:"Send kudos", decision: d.decision === "approved" ? "Approve" : "Decline", post:"Use this draft"}[kind];
   el.innerHTML = `${body}<div class="row"><button class="btn primary sm" data-go>${cta}</button><button class="btn quiet sm" data-no>Dismiss</button></div>`;
   aiLog.appendChild(el); aiLog.scrollTop = aiLog.scrollHeight;
   const val = f => { const x = el.querySelector(`[data-f="${f}"]`); return x ? x.value : d[f]; };
@@ -1039,11 +1216,12 @@ function proposal(kind, d){
     let err = null;
     if (kind === "leave") err = submitLeave(val("type"), val("start"), val("end"), val("note"));
     if (kind === "expense") err = submitExpense({date:val("date"), merchant:val("merchant").trim(), category:val("category"), amount:Number(val("amount")), note:val("note")});
-    if (kind === "kudos"){ S.kudos.unshift({id:uid("k"), from:"me", to:d.to, date:todayIso, msg:val("msg")}); save(); toast(`Kudos sent to ${P(d.to).name}`); render(); }
+    if (kind === "kudos"){ S.kudos.unshift({id:uid("k"), from:"me", to:d.to, date:todayIso, msg:val("msg")}); log(`gave kudos to ${P(d.to).name}`, {scope:"company"}); save(); toast(`Kudos sent to ${P(d.to).name}`); render(); }
     if (kind === "decision"){ if (d.decision === "declined" && !val("reason").trim()) err = "Add a reason first."; else err = decide(d.id, d.decision, val("reason")); }
+    if (kind === "ticket") err = submitTicket(val("team"), val("subject").trim(), val("details").trim());
     if (kind === "post"){ ACT["use-draft"]({dataset:{id}}); return; }
     if (err) { toast(err); return; }
-    finish({leave:"Request sent", expense:"Claim submitted", kudos:"Kudos sent", decision:"Done"}[kind]);
+    finish({leave:"Request sent", ticket:"Request sent", expense:"Claim submitted", kudos:"Kudos sent", decision:"Done"}[kind]);
   });
 }
 
@@ -1064,6 +1242,26 @@ function findDates(q){
 function localAssist(q){
   const s = q.toLowerCase();
   setTimeout(() => {
+    if (/(broken|not working|doesn.?t work|flicker|wifi|wi-fi|printer|projector|password|locked out|help desk|ticket|benefits|payroll)/.test(s) && !/(status|where)/.test(s)){
+      const team = /(projector|room|heat|cold|light|chair|desk|door|parking|clean)/.test(s) ? "Facilities" : /(benefit|payroll|pay stub|t4|beneficiary)/.test(s) ? "People Ops" : /(invoice|reimburs|payment)/.test(s) ? "Finance" : "IT";
+      bot(`I've drafted a request for ${team}. Add any details and send it.`);
+      proposal("ticket", {team, subject:q.replace(/^(please|can you|help)\s+/i,""), details:""}); return;
+    }
+    if (/(approv|needs my)/.test(s)){
+      if (!isMgr()){ bot("Only managers approve requests. Your own requests are in Work queue under Waiting on others."); return; }
+      const p = pendingReqs(); bot(p.length ? `${p.length} waiting for you:\n` + p.map(r => `• ${P(r.person).name}: ${r.kind==="leave" ? `${LEAVE[r.type].label}, ${fmtRange(r.start,r.end)}` : `${money(r.amount)} ${r.category}`}`).join("\n") + "\nTomás's keyboard is over the usual $150 IT limit." : "Nothing is waiting for you.");
+      if (p.length) bot("Open Work queue to decide, or tell me which one to approve."); return;
+    }
+    if (/(where.?s my|where is my|status|waiting on|hear back|stuck)/.test(s)){
+      const w = waitingOn().filter(x => !/claim|expense/.test(s) || x.kind === "expense").filter(x => !/ticket|request/.test(s) || x.kind === "ticket");
+      bot(w.length ? w.map(x => `• ${x.id} ${x.title}: ${x.step.toLowerCase()}, with ${whoName(x.on)} (${age(x.date)})`).join("\n") : "Nothing of yours is waiting on anyone."); return;
+    }
+    if (/(what first|work queue|to do|todo)/.test(s)){
+      const n = needsMe(); bot(n.length ? "Start with these:\n" + n.map(i => i.kind === "approval" ? `• Decide ${P(i.r.person).name}'s ${i.r.kind === "leave" ? "time off" : "claim"} (${i.r.id})` : i.kind === "reply" ? `• Reply to ${P(i.t.assignee).name} on ${i.t.id}: ${i.t.subject}` : `• Acknowledge “${i.n.title}”`).join("\n") : "Nothing needs you right now."); return;
+    }
+    if (/(activity|what happened|history|recent)/.test(s)){
+      bot(S.activity.slice(0,6).map(a => `• ${whoName(a.who)} ${a.text}${a.ref ? " (" + a.ref + ")" : ""}`).join("\n")); return;
+    }
     if (/(time off|day off|days off|vacation|holiday|book|leave|sick|personal day)/.test(s) && !/policy/.test(s)){
       const ds = findDates(q).sort(); const start = ds[0] || wd(1), end = ds[ds.length-1] || start;
       const type = /sick/.test(s) ? "sick" : /personal/.test(s) ? "personal" : "vacation";
@@ -1081,11 +1279,6 @@ function localAssist(q){
       const out = outBetween(todayIso, addDays(todayIso, /next week/.test(s) ? 13 : 6));
       bot(out.length ? out.map(e => `${e.person==="me"?"You":P(e.person).name}: ${fmtRange(e.start,e.end)}${e.status==="pending"?" (waiting for approval)":""}`).join("\n") : "No one on your team is out."); return;
     }
-    if (/(approv|pending|needs my)/.test(s)){
-      if (!isMgr()){ bot("Only managers have approvals. Your own requests are on Time off and Expenses."); return; }
-      const p = pendingReqs(); bot(p.length ? `${p.length} waiting for you:\n` + p.map(r => `• ${P(r.person).name}: ${r.kind==="leave" ? `${LEAVE[r.type].label}, ${fmtRange(r.start,r.end)}` : `${money(r.amount)} ${r.category}`}`).join("\n") + "\nLena's dates overlap with nobody else; Tomás's keyboard is over the usual $150 IT limit." : "Nothing is waiting for you.");
-      if (p.length) bot("Open Approvals to decide, or tell me which one to approve."); return;
-    }
     if (/(meal|limit|cap|policy|receipt|coworking|alcohol)/.test(s)){
       bot(`Meals are capped at ${money(POLICY.mealCap)} a day. Claims over ${money(POLICY.receiptOver)} need a receipt. Coworking day passes are fine under Other when you're travelling, up to $40. Alcohol isn't reimbursed. For anything else, ask Sofia Márquez in Finance.`); return;
     }
@@ -1096,7 +1289,7 @@ function localAssist(q){
     const terms = s.replace(/who (knows|is|speaks)|find|anyone|someone|\?|that|about|the/g," ").trim().split(/\s+/).filter(w => w.length > 2);
     const hits = S.people.filter(p => terms.some(t => [p.name,p.title,p.dept,p.loc,...(p.skills||[])].join(" ").toLowerCase().includes(t)));
     if (hits.length && hits.length < S.people.length){ bot(hits.slice(0,5).map(p => `${p.name}, ${p.title} (${p.loc})${p.skills.length ? ". Knows " + p.skills.join(", ") : ""}`).join("\n")); return; }
-    bot("In this demo I can book time off, start an expense claim, list who's out, explain the expense policy, find people by skill and summarize your approvals. Open OC Connect in Claude for full answers.");
+    bot("In this demo I can book time off, start an expense claim, open a help request, check what you're waiting on, list who's out, explain the expense policy, find people by skill and go through your work queue. Open OC Connect in Claude for full answers.");
   }, 350);
 }
 
