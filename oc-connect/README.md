@@ -1,6 +1,8 @@
 # OC Connect (prototype)
 
-A clickable prototype of OC Connect, an AI-first employee hub. It is one HTML file with fictional example data.
+A clickable prototype of OC Connect, an AI-first employee hub for Okanagan College. It is one HTML file with fictional example data.
+
+The styling follows Okanagan College branding: OC red (cherry) for actions, Cabernet for headings and the sidebar, and Modern Era where it is installed (Hanken Grotesk otherwise). The colour hex values are approximations; replace the tokens at the top of `index.html` with the exact values from the brand guidelines.
 
 - **Connect:** Home ("Needs you", who's out, events, AI catch-up), News (posts, required acknowledgements, kudos) and People (search by name, city or skill).
 - **Me:** Time off (balances, booking with overlap warnings), Expenses (policy hints, receipt scanning) and Profile.
